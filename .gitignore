@@ -1,0 +1,48 @@
+# Node
+node_modules/
+dist/
+build/
+*.tsbuildinfo
+.next/
+.npm/
+*.tgz
+
+# Kotlin / Gradle
+.gradle/
+**/build/
+!packages/compose/build.gradle.kts
+local.properties
+*.jar
+*.aar
+.kotlin/
+
+# Swift / Xcode
+.swiftpm/
+.build/
+DerivedData/
+*.xcuserstate
+xcuserdata/
+*.xcworkspace/xcuserdata/
+
+# Rust (若后续引入)
+target/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs / temp
+*.log
+tmp/
+.cache/
+
+# 生成产物（由 tools/ 生成，不入库）
+packages/compose/src/commonMain/kotlin/**/GeneratedTokens.kt
+packages/apple/Sources/**/GeneratedTokens.swift
+packages/rn/src/generated/tokens.ts
