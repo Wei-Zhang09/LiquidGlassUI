@@ -139,7 +139,19 @@ python tools/verify-compose.py                                                  
 3. **移动端验证闭环**：是否需要 Android 模拟器/真机（影响 P2 能否真正验证）
 4. **Web Components 的样式隔离策略**：当前用 Shadow DOM，是否需要在需要时开放 `::part()` 定制
 
-## 7. 已知坑（避免重复踩）
+## 7. Compose 端验证的测量方差（重要）
+
+`tools/verify-compose.py` 三次独立运行的边缘带均值：**21.1 / 8.1 / 15.5**（2.6 倍差异）。
+内部本底始终稳定在 **0.3–0.5**。
+
+- **方差来自截图**：Compose 窗口的合成时机不定，连拍取帧仍会有差异。
+- **定性结论三次完全一致**：边缘显著高于内部、衰减单调。结论可信。
+- **报告时给区间，不要给单点值**。给单点会造成"精确但不可复现"的错觉。
+
+若要让数字稳定，需要换成程序内渲染（Compose 的 test framework / 离屏渲染），
+而不是截桌面窗口。当前方案是权衡后的选择，不是最优。
+
+## 8. 已知坑（避免重复踩）
 
 - `git ls-remote` 对**空仓库**返回 exit=0 且零输出，与"仓库不存在"（exit=128 + "Repository not found"）不同。判断空仓库看 GitHub API 404 + ls-remote 无 ref。
 - 示例页 `body` 必须写 `min-height: 100vh`，否则背景传播到 `<html>`，`backdrop-filter` 采样到的 backdrop root 与预期不同。
@@ -147,4 +159,11 @@ python tools/verify-compose.py                                                  
 - `device_scale_factor=2` 时截图坐标是 CSS 坐标的 2 倍，`getImageData` 必须换算。
 - MSYS 的 `/tmp` 对原生 Windows Python 不可见，用 `$TMPDIR`。
 - TypeScript 用 `moduleResolution: bundler` 时不会补 `.js` 扩展名，浏览器 ESM 要求完整路径 —— 源码里的相对 import 必须写 `.js`。
-- 本机无 `gh` CLI、无 `gradle`（PATH 里没有），但有 JDK 17、Android SDK、`~/.gradle/wrapper/dists/gradle-8.5-bin`（已解压可用）。
+- 本机无 `gh` CLI、无 `gradle`（PATH 里没有），但有 JDK 21、Android SDK、Gradle wrapper 缓存。
+- **`backdrop-desktop` 需要 JDK 21**：其 class 文件版本 65。用 JDK 17 抛 `UnsupportedClassVersionError`。
+- **Gradle 不读 `HTTP_PROXY`**：必须写 `~/.gradle/gradle.properties` 的 `systemProp.*`。
+- **Windows `CreateProcess` 不用 cwd 解析可执行文件**：subprocess 调 `gradlew.bat` 必须给绝对路径。
+- **截桌面窗口时，同名进程可能有多个**（gradle 残留）：要按窗口面积挑最大的，不能取第一个。
+- **判断"画面是否渲染完成"不要用启发式阈值**：试过两种都失败——
+  阈值门控会因阈值选错全拒；"最大化低饱和占比"会把深色控制台窗口误判为玻璃。
+  最终改用最朴素的"连拍两帧是否一致"，可靠得多。

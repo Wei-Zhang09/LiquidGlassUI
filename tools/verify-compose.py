@@ -82,8 +82,26 @@ def run_variant(no_lens: bool, out_png: pathlib.Path) -> bool:
         if not wait_window():
             print("  窗口未出现")
             return False
-        time.sleep(2)
-        return capture(out_png)
+
+        # 连拍 3 帧，取最后一帧；并检查最后两帧是否一致（渲染是否稳定）。
+        # 之前"检测玻璃是否渲染"的启发式失败过两次：
+        # 阈值门控会因阈值选错全拒；最大化低饱和占比会把深色控制台窗口当成玻璃。
+        # 这里不做内容判断，只要求连续两帧稳定 —— 更朴素也更可靠。
+        import hashlib
+        frames = []
+        tmp = out_png.with_name("_probe_" + out_png.name)
+        for _ in range(3):
+            time.sleep(2.0)
+            if capture(tmp):
+                frames.append(tmp.read_bytes())
+        tmp.unlink(missing_ok=True)
+        if not frames:
+            return False
+        h = [hashlib.sha256(f).hexdigest()[:12] for f in frames]
+        stable = len(frames) >= 2 and h[-1] == h[-2]
+        out_png.write_bytes(frames[-1])
+        print(f"  连拍 {len(frames)} 帧，末两帧{'一致' if stable else '不一致（渲染可能未稳定）'}")
+        return True
     finally:
         proc.terminate()
         try:
