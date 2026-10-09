@@ -1,0 +1,131 @@
+# LiquidGlassUI 交接文档
+
+> 每次长任务切换模型/会话时更新。目标、关键结论、当前状态、待办、待决策。
+
+最后更新：2026-10-08
+
+## 1. 目标
+
+把六个液态玻璃参考实现（`rdev/liquid-glass-react`、`dashersw/liquid-glass-js`、`Kyant0/AndroidLiquidGlass`、`AndrewPrifer/liquid-dom`、`callstack/liquid-glass`、`archisvaze/liquid-glass`）收敛成**跨端可复用的 UI 组件库**，重点：
+
+1. 通用性 —— 设计参数单源，四端观感不漂移
+2. 易用性 —— API 遵循各端惯用法，能力门控显式暴露
+3. 平台适配 —— 不同端组件侧重不同，不平铺同一份清单
+
+## 2. 仓库与坐标
+
+| 项 | 值 |
+|---|---|
+| 仓库 | https://github.com/Wei-Zhang09/LiquidGlassUI.git （private） |
+| 本地 | `D:\HermesWorkSpace\LiquidGlassUI` |
+| 默认分支 | `main` |
+| Git 身份 | local config: `Wei-Zhang09` / `Wei-Zhang09@users.noreply.github.com` |
+| 推送凭据 | Git Credential Manager 已存（`git push` 直接可用，无需 token） |
+| 代理 | `HTTPS_PROXY=http://127.0.0.1:7897`（git/npm/curl 需要） |
+| Kanban 看板 | `liquidglassui`（`hermes kanban --board liquidglassui ls`） |
+| 研究材料 | `D:\HermesWorkSpace\tochat\liquid-glass-study\`（6 仓库源码 + 5 篇笔记 + 25 个验证脚本） |
+| 相关 skill | `liquid-glass-ui` v3.0.0（跨端，含 `references/mobile-platforms.md`） |
+
+## 3. 已确认的决策
+
+### 来自用户
+
+| 决策 | 结论 |
+|---|---|
+| 优先级 | **Web > Windows 桌面 > 移动端** |
+| 验证策略 | Web + Compose 做到「可运行可验证」；Apple/RN 只出代码骨架并如实标注未验证 |
+| Web 封装 | React **+** Web Components（覆盖 Vue/Svelte/原生） |
+| 发布 | 暂不发布，仓库内部使用，包名留占位 |
+| 执行方式 | 先做最小可运行原型确认手感，再铺开全部组件 |
+
+### 技术结论（已验证）
+
+- **`io.github.kyant0:backdrop:2.0.1` 在 Maven Central 上存在**，且 `.module` 元数据里有 `desktopApiElements-published`（`platform=jvm` → `backdrop-desktop`）。
+  → **一套 Compose 代码同时覆盖 Windows 桌面与 Android**，不需要两份实现。这是 P1 的核心依据。
+- **WPF 无法做元素级液态玻璃**。仅能通过 P/Invoke `SetWindowCompositionAttribute` 得到窗口级 DWM Acrylic。本项目不提供 WPF 实现。
+- **Web 端真折射只有一条路**：`backdrop-filter: url(#svgFilter)`，且**只有 Chromium 渲染**。Safari/Firefox 静默失败（`CSS.supports` 返回 true 但什么都不做）。
+- **两个必踩的坑**（实测得出）：滤镜必须写 `color-interpolation-filters="sRGB"`；`feImage` 必须写 `preserveAspectRatio="none"`。缺任一都会静默失效。
+
+## 4. 当前状态
+
+### 已完成并验证
+
+| 项 | 证据 |
+|---|---|
+| 仓库初始化 + 2 篇 ADR + README | 3 个 commit 已推送，独立 clone 读回确认 |
+| Kanban 看板 20 张卡片 + 依赖链 | `hermes kanban boards` 可见 |
+| **tokens 单源** | 改一处 JSON → 四端同步；`--check` 正确检出漂移（exit 1） |
+| **Web GlassSurface 原型** | `tools/verify-web.py` 双浏览器实测通过 |
+| 截图留证 | `docs/screenshots/web-prototype-{chromium,firefox}.png` |
+
+### Web 原型验证结果（`tools/verify-web.py`）
+
+```
+Chromium: support=refraction  边缘带位移 mean=83.4 max=224  中心区 mean=0.0
+Firefox:  support=frost       正确降级（静默无折射，符合预期）
+```
+
+中心区 17 个采样点差异全为 0 —— 证明折射严格限于边缘带，中间不变形。
+
+### 代码结构
+
+```
+LiquidGlassUI/
+├── docs/
+│   ├── adr/0001-component-matrix-and-architecture.md
+│   ├── adr/0002-platform-priority-and-desktop.md
+│   └── screenshots/
+├── packages/
+│   ├── tokens/tokens.json              ← 设计参数唯一真源
+│   └── web/                            ← 已实现并验证
+│       ├── src/capabilities.ts         UA 嗅探门控
+│       ├── src/refraction.ts           Snell 定律折射剖面 + 位移贴图
+│       ├── src/core/filter-registry.ts SVG 滤镜注册表（含命名空间断言）
+│       ├── src/elements/glass-surface.ts  Web Component
+│       ├── src/react/GlassSurface.tsx  React 桥接
+│       └── src/generated/              由 gen-tokens.py 生成，勿手改
+├── examples/web/index.html             ← 可运行示例
+└── tools/
+    ├── gen-tokens.py                   tokens → 四端代码生成
+    ├── verify-web.py                   像素级验证
+    └── seed-kanban.sh                  看板种子
+```
+
+## 5. 待办（按优先级）
+
+### P0 —— Web 端继续
+
+- [ ] Web 组件：`GlassCard` / `GlassButton` / `GlassGroup`
+- [ ] Web 组件：`GlassNavBar` / `GlassDialog` / `GlassSegmentedControl`
+- [ ] Web 示例站点完善 + 浏览器矩阵验证纳入 CI
+
+### P1 —— Windows 桌面（Compose）
+
+- [ ] **未开始**。Gradle 构建首次尝试超时（10 分钟无输出，已终止），**尚未证明能编译**。
+- [ ] 关键待验证：`backdrop` 能否在本机 Gradle + 代理环境下解析并编译
+- [ ] 需要真正的 Compose Multiplatform 工程（含 compose 插件），当前 `packages/compose` 只是骨架
+
+### P2 —— 移动端
+
+- [ ] Android 侧与桌面端共用 Compose 代码，随 P1 一起推进
+
+### P3 —— iOS / RN（阻塞）
+
+- [ ] 4 张卡片已加评论标注「无 macOS，不得声称已验证」
+
+## 6. 待用户决策
+
+1. **Compose 桌面端的构建方式**：是否接受用 Compose Multiplatform 官方插件搭建（需要下载较多依赖，首次构建慢）？还是先用更轻量的方式验证 `backdrop` 可用性？
+2. **v1 是否要 `GlassSidebar` / `GlassMenu` / `GlassTooltip`**（桌面端高频，ADR-0002 D4 已提升为 v1，但会增加工作量）
+3. **移动端验证闭环**：是否需要 Android 模拟器/真机（影响 P2 能否真正验证）
+4. **Web Components 的样式隔离策略**：当前用 Shadow DOM，是否需要在需要时开放 `::part()` 定制
+
+## 7. 已知坑（避免重复踩）
+
+- `git ls-remote` 对**空仓库**返回 exit=0 且零输出，与"仓库不存在"（exit=128 + "Repository not found"）不同。判断空仓库看 GitHub API 404 + ls-remote 无 ref。
+- 示例页 `body` 必须写 `min-height: 100vh`，否则背景传播到 `<html>`，`backdrop-filter` 采样到的 backdrop root 与预期不同。
+- **验证脚本要按元素引用解析目标滤镜**：多个玻璃面各有滤镜，取 `document.querySelector('filter')` 会打错对象（这个 bug 让验证假失败过一次）。
+- `device_scale_factor=2` 时截图坐标是 CSS 坐标的 2 倍，`getImageData` 必须换算。
+- MSYS 的 `/tmp` 对原生 Windows Python 不可见，用 `$TMPDIR`。
+- TypeScript 用 `moduleResolution: bundler` 时不会补 `.js` 扩展名，浏览器 ESM 要求完整路径 —— 源码里的相对 import 必须写 `.js`。
+- 本机无 `gh` CLI、无 `gradle`（PATH 里没有），但有 JDK 17、Android SDK、`~/.gradle/wrapper/dists/gradle-8.5-bin`（已解压可用）。

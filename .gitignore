@@ -46,3 +46,6 @@ tmp/
 packages/compose/src/commonMain/kotlin/**/GeneratedTokens.kt
 packages/apple/Sources/**/GeneratedTokens.swift
 packages/rn/src/generated/tokens.ts
+
+# Gradle wrapper（由开发者用 gradle wrapper 生成，或从模板复制）
+packages/compose/gradle/wrapper/gradle-wrapper.jar
