@@ -101,9 +101,28 @@ LiquidGlassUI/
 
 ### P1 —— Windows 桌面（Compose）
 
-- [ ] **未开始**。Gradle 构建首次尝试超时（10 分钟无输出，已终止），**尚未证明能编译**。
-- [ ] 关键待验证：`backdrop` 能否在本机 Gradle + 代理环境下解析并编译
-- [ ] 需要真正的 Compose Multiplatform 工程（含 compose 插件），当前 `packages/compose` 只是骨架
+- [x] 构建链路打通（官方 Compose Multiplatform 插件）
+- [x] 玻璃原型可运行并通过 A/B 像素验证
+- [ ] 桌面端组件：`GlassSidebar` / `GlassMenu` / `GlassTooltip`（桌面高频）
+- [ ] 与 tokens 打通：目前 `packages/compose` 用的是写死的 dp/Color，
+      尚未接入 `packages/tokens` 生成的 `GeneratedTokens.kt`
+
+**构建环境要求（踩过的坑，必须照做）**：
+
+| 项 | 值 | 原因 |
+|---|---|---|
+| JDK | **21** | `backdrop-desktop:2.0.1` 的 class 文件版本是 65（Java 21）。用 JDK 17 会抛 `UnsupportedClassVersionError`。jar 的 major version 实测为 65 |
+| Gradle | **≥ 8.14.4** | Kotlin 2.4.x 的 Gradle 插件最低要求。wrapper 已设为 8.14.4 |
+| 代理 | `~/.gradle/gradle.properties` | **Gradle 不读 `HTTP_PROXY` 环境变量**，必须写 systemProp。这是首次构建 10 分钟零下载的根因 |
+| 插件版本 | Kotlin 2.4.21 / compose 1.12.1 | 从 Maven Central metadata 查得的最新稳定版 |
+
+构建命令：
+```bash
+cd packages/compose
+JAVA_HOME="C:/Program Files/Java/jdk-21" ./gradlew --no-daemon compileKotlin   # 编译
+JAVA_HOME="C:/Program Files/Java/jdk-21" ./gradlew --no-daemon run             # 运行
+python tools/verify-compose.py                                                  # A/B 验证
+```
 
 ### P2 —— 移动端
 
