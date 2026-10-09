@@ -42,10 +42,12 @@ desktop.ini
 tmp/
 .cache/
 
-# 生成产物（由 tools/ 生成，不入库）
-packages/compose/src/commonMain/kotlin/**/GeneratedTokens.kt
-packages/apple/Sources/**/GeneratedTokens.swift
-packages/rn/src/generated/tokens.ts
+# 生成产物：tokens 生成物【入库】。
+# 理由：它们是可编译源码的直接依赖，不入库会让新克隆无法构建。
+# （曾因排除这些文件导致 clone 后 compileKotlin 报 Unresolved reference。）
+# 一致性由 `python tools/gen-tokens.py --check` 保证，可挂到 CI。
+# 注意：packages/compose/gradle/wrapper/gradle-wrapper.jar 也不该排除，
+# 否则 gradlew 无法启动 —— 见下方注释。
 
-# Gradle wrapper（由开发者用 gradle wrapper 生成，或从模板复制）
-packages/compose/gradle/wrapper/gradle-wrapper.jar
+# Gradle wrapper jar 必须入库，否则 clone 后 gradlew 无法启动。
+# （曾误排除，导致新克隆报 'Unable to access jarfile gradle-wrapper.jar'）
