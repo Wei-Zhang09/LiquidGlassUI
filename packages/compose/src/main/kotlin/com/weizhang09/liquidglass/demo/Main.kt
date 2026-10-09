@@ -27,18 +27,17 @@ import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
 import com.kyant.backdrop.backdrops.layerBackdrop
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
-import com.kyant.backdrop.drawBackdrop
-import com.kyant.backdrop.effects.blur
-import com.kyant.backdrop.effects.lens
-import com.kyant.backdrop.effects.vibrancy
+import com.weizhang09.liquidglass.GlassLevel
+import com.weizhang09.liquidglass.GlassSurface
+import com.weizhang09.liquidglass.tokens.GlassColorTokens
+import com.weizhang09.liquidglass.tokens.GlassRadiusTokens
 
 /**
- * Compose Multiplatform 桌面端玻璃原型。
+ * Compose Multiplatform 桌面端原型 —— tokens 驱动版。
  *
- * 标准用法（取自 backdrop 官方 catalog）：
- *   val backdrop = rememberLayerBackdrop()
- *   背景层用 Modifier.layerBackdrop(backdrop) 标记
- *   玻璃元素用 Modifier.drawBackdrop(backdrop, shape, effects) 采样该层
+ * 本文件不含任何硬编码的光学参数：圆角、模糊强度、折射高度/强度
+ * 全部来自 `packages/tokens/tokens.json` 生成的 Glass*Tokens。
+ * 改一处 JSON → 重新生成 → 本界面观感随之变化。
  */
 fun main() = application {
     Window(
@@ -81,21 +80,13 @@ private fun DesktopGlassPrototype() {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(28.dp),
         ) {
-            // 玻璃面板：折射 + 模糊 + 增艳
-            Box(
-                Modifier
-                    .width(340.dp)
-                    .height(150.dp)
-                    .drawBackdrop(
-                        backdrop = backdrop,
-                        shape = { RoundedCornerShape(26.dp) },
-                        effects = {
-                            vibrancy()
-                            blur(8f.dp.toPx())
-                            if (!noLens) lens(12f.dp.toPx(), 24f.dp.toPx())
-                        },
-                    ),
-                contentAlignment = Alignment.Center,
+            // 玻璃面板：圆角/模糊/折射全部由 tokens 决定
+            GlassSurface(
+                backdrop = backdrop,
+                modifier = Modifier.width(340.dp).height(150.dp),
+                shape = RoundedCornerShape(GlassRadiusTokens.lg),
+                level = GlassLevel.Elevated,
+                refraction = !noLens,
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
@@ -113,20 +104,12 @@ private fun DesktopGlassPrototype() {
             }
 
             // 玻璃胶囊按钮
-            Box(
-                Modifier
-                    .width(200.dp)
-                    .height(52.dp)
-                    .drawBackdrop(
-                        backdrop = backdrop,
-                        shape = { CircleShape },
-                        effects = {
-                            vibrancy()
-                            blur(2f.dp.toPx())
-                            lens(12f.dp.toPx(), 24f.dp.toPx())
-                        },
-                    ),
-                contentAlignment = Alignment.Center,
+            GlassSurface(
+                backdrop = backdrop,
+                modifier = Modifier.width(200.dp).height(52.dp),
+                shape = CircleShape,
+                level = GlassLevel.Regular,
+                refraction = !noLens,
             ) {
                 Text("Glass Button", fontSize = 15.sp, color = Color(0xFF1B2733))
             }

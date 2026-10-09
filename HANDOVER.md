@@ -103,9 +103,15 @@ LiquidGlassUI/
 
 - [x] 构建链路打通（官方 Compose Multiplatform 插件）
 - [x] 玻璃原型可运行并通过 A/B 像素验证
+- [x] **与 tokens 打通**（渲染层闭环已验证）
 - [ ] 桌面端组件：`GlassSidebar` / `GlassMenu` / `GlassTooltip`（桌面高频）
-- [ ] 与 tokens 打通：目前 `packages/compose` 用的是写死的 dp/Color，
-      尚未接入 `packages/tokens` 生成的 `GeneratedTokens.kt`
+
+**tokens 接入要点**：生成物落在 `src/commonMain/kotlin`，而项目是 `kotlin("jvm")`，
+默认只编译 `src/main/kotlin`。必须在 `build.gradle.kts` 显式加：
+```kotlin
+kotlin { sourceSets { main { kotlin.srcDir("src/commonMain/kotlin") } } }
+```
+否则 `GeneratedTokens.kt` 根本不参与编译（此前就是这个断层）。
 
 **构建环境要求（踩过的坑，必须照做）**：
 

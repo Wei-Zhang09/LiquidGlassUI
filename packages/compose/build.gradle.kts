@@ -26,6 +26,15 @@ kotlin {
     // backdrop-desktop 2.0.1 的 class 文件版本是 65（Java 21），
     // 用 JDK 17 会抛 UnsupportedClassVersionError。桌面目标必须 21。
     jvmToolchain(21)
+
+    sourceSets {
+        main {
+            // tokens 生成到 commonMain（保持多平台就绪），
+            // 而本项目是 kotlin("jvm")，默认只编译 src/main/kotlin。
+            // 不显式加这个源目录，GeneratedTokens.kt 不会参与编译。
+            kotlin.srcDir("src/commonMain/kotlin")
+        }
+    }
 }
 
 tasks.test {

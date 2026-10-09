@@ -60,7 +60,8 @@ import { isLiquidGlassSupported } from '@liquidglass/rn'
 
 | 项 | 方法 | 结果 |
 |---|---|---|
-| tokens 单源 | 改一处 JSON，比对四端产物 | ✅ 四端同步；`--check` 能检出漂移 |
+| tokens 单源（生成层） | 改一处 JSON，比对四端产物 | ✅ 四端同步；`--check` 能检出漂移 |
+| tokens 单源（渲染层） | `tools/verify-tokens-loop.py`，改 `radius.lg` 26→60 后重建截图对比 | ✅ 差异精确落在角区：角 20.09 vs 边 0.04（**502×**） |
 | Web 折射生效 | `tools/verify-web.py`，A/B 归零位移后逐点比对 | ✅ Chromium 边缘带 mean=83.4 / max=224 |
 | Web 中间不变形 | 同上 | ✅ 中心区 mean=0.0（17 个采样点全为 0） |
 | Web 降级正确 | 双浏览器实测 | ✅ Chromium→`refraction`；Firefox→`frost` |
