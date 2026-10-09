@@ -111,7 +111,7 @@ LiquidGlassUI/
 
 | 项 | 值 | 原因 |
 |---|---|---|
-| JDK | **21** | `backdrop-desktop:2.0.1` 的 class 文件版本是 65（Java 21）。用 JDK 17 会抛 `UnsupportedClassVersionError`。jar 的 major version 实测为 65 |
+| JDK | **21**（运行期硬要求） | `backdrop-desktop:2.0.1` 的 class 文件版本是 65（Java 21）。jar 的 major version 实测为 65。**注意区分**：`compileKotlin` 用 JDK 17 也能通过（backdrop 仅作编译期依赖，类不被加载）；只有 `run` 才会抛 `UnsupportedClassVersionError`。用 `jvmToolchain(21)` 让两者一致，避免只按 `JAVA_HOME` 判断而踩坑 |
 | Gradle | **≥ 8.14.4** | Kotlin 2.4.x 的 Gradle 插件最低要求。wrapper 已设为 8.14.4 |
 | 代理 | `~/.gradle/gradle.properties` | **Gradle 不读 `HTTP_PROXY` 环境变量**，必须写 systemProp。这是首次构建 10 分钟零下载的根因 |
 | 插件版本 | Kotlin 2.4.21 / compose 1.12.1 | 从 Maven Central metadata 查得的最新稳定版 |
