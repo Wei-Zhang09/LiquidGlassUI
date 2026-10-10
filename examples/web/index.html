@@ -3,76 +3,134 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>LiquidGlassUI — Web 原型</title>
+<title>LiquidGlassUI — Web 示例</title>
 <link rel="stylesheet" href="../../packages/web/dist/tokens.css">
 <style>
-  html { color-scheme: dark; }
+  html { color-scheme: light; }
+  * { box-sizing: border-box; }
+
   body {
     margin: 0;
     min-height: 100vh;
     font: 15px/1.6 system-ui, "Segoe UI", sans-serif;
-    color: #fff;
-    background:
-      radial-gradient(ellipse 34rem 25rem at 13% 10%, rgb(255 255 255 / .96), transparent 68%),
-      radial-gradient(ellipse 38rem 28rem at 88% 18%, rgb(143 197 245 / .72), transparent 64%),
-      radial-gradient(ellipse 32rem 25rem at 76% 88%, rgb(222 187 235 / .46), transparent 63%),
-      linear-gradient(135deg, #dfe7ee 0%, #f6f8fa 46%, #d5dee7 100%);
-    background-attachment: fixed;
+    color: #1b2733;
+    /* 真实照片背景：玻璃折射需要纹理与边缘才可见 */
+    background: #cbd5e0 url("assets/wallpaper.jpg") center / cover no-repeat fixed;
   }
-  /* 高对比竖条纹：用来肉眼与像素级确认折射。
-     不做遮罩 —— 玻璃背后必须有高对比内容，位移才可测可见。 */
-  .stripes {
-    position: fixed; inset: 0; pointer-events: none; opacity: .9;
-    background: repeating-linear-gradient(90deg,
-      #ff0055 0 20px, #00e5ff 20px 40px, #ffe600 40px 60px);
+
+  .page {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 28px 24px 80px;
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
   }
-  .stage {
-    position: relative;
-    min-height: 100vh;
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    gap: 28px; padding: 40px;
+
+  h2 { font-size: 20px; margin: 0 0 4px; }
+  .hint { font-size: 13px; opacity: 0.78; margin: 0 0 16px; }
+
+  .row { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 18px;
   }
-  .row { display: flex; gap: 24px; align-items: center; flex-wrap: wrap; justify-content: center; }
-  lg-glass-surface { padding: 16px 32px; font-weight: 500; }
-  lg-glass-surface.tall { padding: 26px 34px; width: 300px; }
+
+  lg-glass-navbar { width: 100%; }
+  lg-glass-navbar a { padding: 8px 14px; border-radius: 10px; font-size: 13px; cursor: pointer; }
+
   .badge {
-    position: fixed; top: 16px; right: 18px;
-    font-size: 12px; padding: 6px 12px;
-    border-radius: 999px; background: rgba(0,0,0,.55);
-    backdrop-filter: blur(8px);
+    position: fixed; top: 16px; right: 18px; z-index: 100;
+    font-size: 12px; padding: 7px 14px; border-radius: 999px;
+    background: rgba(0, 0, 0, 0.62); color: #fff;
   }
+
   .legend {
-    position: fixed; left: 18px; bottom: 16px;
-    font-size: 12px; opacity: .8; line-height: 1.7;
+    position: fixed; left: 18px; bottom: 16px; z-index: 100;
+    font-size: 12px; line-height: 1.7; color: #fff;
+    text-shadow: 0 1px 6px rgba(0,0,0,.6);
   }
   code { font-family: ui-monospace, Consolas, monospace; }
+
+  /* 底部标签栏演示：限制宽度模拟手机 */
+  .phone {
+    width: 320px; height: 150px; position: relative;
+    border-radius: 22px; overflow: hidden;
+    background: rgba(0,0,0,.18);
+  }
+  .phone lg-glass-bottombar { position: absolute; left: 10px; right: 10px; bottom: 10px; }
 </style>
 </head>
 <body>
-<div class="stripes"></div>
-
-<div class="stage">
-  <div class="row">
-    <lg-glass-surface level="regular" radius="999">GlassSurface</lg-glass-surface>
-    <lg-glass-surface level="elevated" radius="999">Elevated</lg-glass-surface>
-    <lg-glass-surface level="focused" radius="999">Focused</lg-glass-surface>
-  </div>
-
-  <div class="row">
-    <lg-glass-surface class="tall" level="elevated" radius="26" id="panel">
-      <div style="font:600 16px/1.4 system-ui; margin-bottom:8px">边缘折射</div>
-      <div style="font:400 13px/1.6 system-ui; opacity:.85">
-        边缘带内的像素被 Snell 定律推挤，中心保持清晰。
-      </div>
-    </lg-glass-surface>
-  </div>
-</div>
-
 <div class="badge" id="badge">检测中…</div>
 <div class="legend">
   降级阶梯：<code>refraction</code> → <code>frost</code> → <code>solid</code><br>
   当前：<span id="level">—</span>
+</div>
+
+<div class="page">
+
+  <lg-glass-navbar brand="LiquidGlassUI" radius="20">
+    <a href="#">概览</a>
+    <a href="#">组件</a>
+    <a href="#">设计参数</a>
+    <a href="#">平台适配</a>
+  </lg-glass-navbar>
+
+  <section>
+    <h2>GlassSurface — 材质层级</h2>
+    <p class="hint">四个层级对应不同模糊强度，取自 tokens。</p>
+    <div class="row">
+      <lg-glass-surface level="plain"    radius="999" style="padding:14px 26px">plain</lg-glass-surface>
+      <lg-glass-surface level="regular"  radius="999" style="padding:14px 26px">regular</lg-glass-surface>
+      <lg-glass-surface level="elevated" radius="999" style="padding:14px 26px">elevated</lg-glass-surface>
+      <lg-glass-surface level="focused"  radius="999" style="padding:14px 26px">focused</lg-glass-surface>
+    </div>
+  </section>
+
+  <section>
+    <h2>GlassButton — 交互态</h2>
+    <p class="hint">悬停 / 按下 / 键盘聚焦 / 禁用。悬停用 <code>@media (hover: hover)</code> 门控，触屏不触发。</p>
+    <div class="row">
+      <lg-glass-button>默认按钮</lg-glass-button>
+      <lg-glass-button variant="primary">主要操作</lg-glass-button>
+      <lg-glass-button variant="danger">危险操作</lg-glass-button>
+      <lg-glass-button disabled>已禁用</lg-glass-button>
+    </div>
+  </section>
+
+  <section>
+    <h2>GlassCard — 内容分组</h2>
+    <p class="hint">卡片是可容纳结构化内容的块级容器，自带标题/描述插槽。</p>
+    <div class="grid">
+      <lg-glass-card title="边缘折射" desc="边缘带内的像素被 Snell 定律推挤，中心保持清晰。" elevate>
+        <div style="font-size:13px;opacity:.75">卡片内容区</div>
+      </lg-glass-card>
+      <lg-glass-card title="设计参数单源" desc="改一处 tokens.json，四端观感同步变化。" elevate>
+        <div style="font-size:13px;opacity:.75">卡片内容区</div>
+      </lg-glass-card>
+      <lg-glass-card title="平台适配" desc="不同端的组件侧重不同，不是平铺同一份清单。" elevate>
+        <div style="font-size:13px;opacity:.75">卡片内容区</div>
+      </lg-glass-card>
+    </div>
+  </section>
+
+  <section>
+    <h2>GlassBottomBar — 移动端形态</h2>
+    <p class="hint">
+      与顶部导航对应，但交互模型不同：条目等宽、图标在上文字在下、<strong>无悬停态</strong>（触屏没有 hover）。
+    </p>
+    <div class="phone">
+      <lg-glass-bottombar radius="18">
+        <button data-icon="◎">概览</button>
+        <button data-icon="◈" aria-selected="true">组件</button>
+        <button data-icon="⚙">设置</button>
+      </lg-glass-bottombar>
+    </div>
+  </section>
+
 </div>
 
 <script type="module">
@@ -80,23 +138,17 @@
   defineAll()
 
   const caps = getGlassCapabilities()
-  const badge = document.getElementById('badge')
-  badge.textContent = caps.refraction
+  document.getElementById('badge').textContent = caps.refraction
     ? '真折射已启用'
     : caps.backdropFilter
       ? '降级：磨砂（无折射）'
       : '降级：实心'
 
-  // 等一帧让 ResizeObserver 跑完，再读取实际降级层级
   requestAnimationFrame(() => requestAnimationFrame(() => {
-    const el = document.getElementById('panel')
-    document.getElementById('level').textContent = el.getAttribute('data-support')
-    // 供自动化测试读取
-    window.__lg = {
-      caps,
-      support: el.getAttribute('data-support'),
-      filterVar: getComputedStyle(el).getPropertyValue('--lg-filter').trim(),
-    }
+    const el = document.querySelector('lg-glass-surface')
+    const support = el?.getAttribute('data-support') ?? '—'
+    document.getElementById('level').textContent = support
+    window.__lg = { caps, support }
   }))
 </script>
 </body>

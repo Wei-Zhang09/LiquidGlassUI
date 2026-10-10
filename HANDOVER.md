@@ -46,6 +46,12 @@
 - **Web 端真折射只有一条路**：`backdrop-filter: url(#svgFilter)`，且**只有 Chromium 渲染**。Safari/Firefox 静默失败（`CSS.supports` 返回 true 但什么都不做）。
 - **两个必踩的坑**（实测得出）：滤镜必须写 `color-interpolation-filters="sRGB"`；`feImage` 必须写 `preserveAspectRatio="none"`。缺任一都会静默失效。
 
+## 3.5 代码结构补充（Web 端）
+
+`packages/web/src/elements/glass-base.ts` 是共享基类，承载降级阶梯、主题、
+圆角与滤镜重建；各组件只提供自己的 CSS 与属性处理。
+新增 Web 组件时继承 `GlassElementBase`，不要重复实现这些逻辑。
+
 ## 4. 当前状态
 
 ### 已完成并验证
@@ -95,9 +101,11 @@ LiquidGlassUI/
 
 ### P0 —— Web 端继续
 
-- [ ] Web 组件：`GlassCard` / `GlassButton` / `GlassGroup`
-- [ ] Web 组件：`GlassNavBar` / `GlassDialog` / `GlassSegmentedControl`
-- [ ] Web 示例站点完善 + 浏览器矩阵验证纳入 CI
+- [x] Web 组件：`GlassSurface` / `GlassButton` / `GlassCard` / `GlassNavBar` / `GlassBottomBar`
+- [x] Web 示例改用真实照片背景（`examples/web/assets/wallpaper.jpg`）
+- [x] 双浏览器验证通过（`tools/verify-web-showcase.py`）
+- [ ] 待补：`GlassGroup`（SDF 平滑并集融合）/ `GlassDialog` / `GlassSegmentedControl`
+- [ ] Web 组件测试（目前只有渲染验证，缺交互测试）
 
 ### P1 —— Windows 桌面（Compose）
 
