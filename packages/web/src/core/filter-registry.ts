@@ -10,6 +10,7 @@
  */
 
 import { buildDisplacementMap } from '../refraction.js'
+import { createFusedDisplacementMap, type RectShape } from '../sdf.js'
 import { optical } from '../generated/tokens.js'
 
 /**
@@ -37,6 +38,9 @@ export interface FilterRequest {
   surface?: string
   overrides?: Partial<typeof optical>
 }
+
+/** 能构成折射边缘带的最小边长（px），与 glass-base 保持一致。 */
+const MIN_FILTER_SIZE = 4
 
 let host: SVGSVGElement | null = null
 const cache = new Map<string, string>()
@@ -135,6 +139,109 @@ export function acquireFilter(req: FilterRequest): string | null {
       '[LiquidGlass] filter 未进入 SVG 命名空间，backdrop-filter 会被静默丢弃。' +
         '请确认宿主是 <svg> 元素而非 <div>/<template>。',
     )
+    return null
+  }
+
+  cache.set(key, id)
+  return id
+}
+
+/**
+ * 注册一个基于**融合轮廓**的滤镜（供 <lg-glass-group> 使用）。
+ *
+ * 与 acquireFilter 的区别：位移贴图的距离场与梯度来自组内全部形状的平滑并集，
+ * 因此相邻玻璃交界处的折射方向是连续的，不会各弯各的。
+ */
+export function registerFusedFilter(opts: {
+  width: number
+  height: number
+  offsetX: number
+  offsetY: number
+  shapes: RectShape[]
+  smoothing: number
+  bezelWidth: number
+  profile: Float64Array
+  maxDisp: number
+}): string | null {
+  const { width: w, height: h, smoothing, shapes } = opts
+  if (w < MIN_FILTER_SIZE || h < MIN_FILTER_SIZE) return null
+  if (shapes.length === 0) return null
+
+  const key = [
+    'fused',
+    w, h, opts.offsetX, opts.offsetY, smoothing, opts.bezelWidth,
+    shapes.map((s) => `${Math.round(s.x)},${Math.round(s.y)},${Math.round(s.width)},${Math.round(s.height)},${Math.round(s.radius)}`).join(';'),
+  ].join(':')
+  const existing = cache.get(key)
+  if (existing) return existing
+
+  let mapUrl: string
+  try {
+    mapUrl = createFusedDisplacementMap({
+      width: w,
+      height: h,
+      offsetX: opts.offsetX,
+      offsetY: opts.offsetY,
+      shapes,
+      smoothing,
+      bezelWidth: opts.bezelWidth,
+      profile: opts.profile,
+      maxDisp: opts.maxDisp,
+    })
+  } catch {
+    return null
+  }
+  if (!mapUrl) return null
+
+  const id = `lg-fused-${seq++}`
+  const scale = opts.maxDisp * 0.8
+  const pad = 8
+  const a = optical.dispersion
+
+  const dispBlock =
+    a > 0
+      ? `
+      <feDisplacementMap in="BLUR_EDGE" in2="MAP" scale="${scale * (1 + a * 0.025)}"
+        xChannelSelector="R" yChannelSelector="G" result="RD"/>
+      <feColorMatrix in="RD" type="matrix" result="R"
+        values="1 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0"/>
+      <feDisplacementMap in="BLUR_EDGE" in2="MAP" scale="${scale}"
+        xChannelSelector="R" yChannelSelector="G" result="GD"/>
+      <feColorMatrix in="GD" type="matrix" result="G"
+        values="0 0 0 0 0  0 1 0 0 0  0 0 0 0 0  0 0 0 1 0"/>
+      <feDisplacementMap in="BLUR_EDGE" in2="MAP" scale="${scale * (1 - a * 0.05)}"
+        xChannelSelector="R" yChannelSelector="G" result="BD"/>
+      <feColorMatrix in="BD" type="matrix" result="B"
+        values="0 0 0 0 0  0 0 0 0 0  0 0 1 0 0  0 0 0 1 0"/>
+      <feBlend in="G" in2="B" mode="screen" result="GB"/>
+      <feBlend in="R" in2="GB" mode="screen" result="RGB"/>
+      <feGaussianBlur in="RGB" stdDeviation="0.35" result="DISP"/>`
+      : `<feDisplacementMap in="BLUR_EDGE" in2="MAP" scale="${scale}"
+        xChannelSelector="R" yChannelSelector="G" result="DISP"/>`
+
+  const svgHost = ensureHost()
+  svgHost.insertAdjacentHTML(
+    'beforeend',
+    `<filter id="${id}" x="${-pad}" y="${-pad}" width="${w + pad * 2}" height="${h + pad * 2}"
+        filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+  <feImage href="${mapUrl}" x="0" y="0" width="${w}" height="${h}"
+           preserveAspectRatio="none" result="MAP"/>
+  <feColorMatrix in="MAP" type="matrix" result="EDGE_MASK"
+    values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 1 0 0"/>
+  <feGaussianBlur in="SourceGraphic" stdDeviation="1.2" result="BLUR"/>
+  <feColorMatrix in="BLUR" type="saturate" values="${optical.saturation / 100}" result="BASE"/>
+  <feGaussianBlur in="SourceGraphic" stdDeviation="1.9" result="BLUR_EDGE"/>
+  ${dispBlock}
+  <feColorMatrix in="DISP" type="saturate" values="${optical.saturation / 100}" result="DISP_SAT"/>
+  <feComposite in="DISP_SAT" in2="EDGE_MASK" operator="in" result="EDGE_ONLY"/>
+  <feComposite in="EDGE_ONLY" in2="BASE" operator="over"/>
+</filter>`,
+  )
+
+  const node = svgHost.lastElementChild
+  if (!isSvgFilterElement(node)) {
+    node?.remove()
+    console.error('[LiquidGlass] 融合滤镜未进入 SVG 命名空间，backdrop-filter 会被静默丢弃。')
     return null
   }
 

@@ -118,6 +118,29 @@
   </section>
 
   <section>
+    <h2>GlassGroup — 玻璃融合</h2>
+    <p class="hint">
+      相邻玻璃不是叠放，而是把距离场做<strong>平滑并集</strong>（SDF smooth min）后
+      按融合轮廓折射 —— 交界处是一整块液体，不会出现两道互相打架的折射边。
+      调整下方 <code>smoothing</code> 可看到融合强度变化。
+    </p>
+    <div class="row" style="align-items:flex-start;flex-direction:column;gap:14px">
+      <lg-glass-group smoothing="8">
+        <lg-glass-button>新建</lg-glass-button>
+        <lg-glass-button>打开</lg-glass-button>
+        <lg-glass-button>保存</lg-glass-button>
+      </lg-glass-group>
+      <lg-glass-group smoothing="40">
+        <lg-glass-button variant="primary">确定</lg-glass-button>
+        <lg-glass-button>取消</lg-glass-button>
+      </lg-glass-group>
+    </div>
+    <p class="hint" style="margin-top:10px">
+      上一组 <code>smoothing=8</code>（几乎不融合）；下一组 <code>smoothing=40</code>（明显融合）。
+    </p>
+  </section>
+
+  <section>
     <h2>GlassBottomBar — 移动端形态</h2>
     <p class="hint">
       与顶部导航对应，但交互模型不同：条目等宽、图标在上文字在下、<strong>无悬停态</strong>（触屏没有 hover）。

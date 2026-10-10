@@ -3,6 +3,7 @@ import { defineGlassButton } from './elements/glass-button.js'
 import { defineGlassCard } from './elements/glass-card.js'
 import { defineGlassNavBar } from './elements/glass-navbar.js'
 import { defineGlassBottomBar } from './elements/glass-bottombar.js'
+import { defineGlassGroup } from './elements/glass-group.js'
 
 export { GlassElementBase, SHARED_CSS, LEVEL_BLUR } from './elements/glass-base.js'
 export type { SupportLevel } from './elements/glass-base.js'
@@ -12,8 +13,19 @@ export { defineGlassButton, GlassButtonElement } from './elements/glass-button.j
 export { defineGlassCard, GlassCardElement } from './elements/glass-card.js'
 export { defineGlassNavBar, GlassNavBarElement } from './elements/glass-navbar.js'
 export { defineGlassBottomBar, GlassBottomBarElement } from './elements/glass-bottombar.js'
+export { defineGlassGroup, GlassGroupElement } from './elements/glass-group.js'
 
-export { acquireFilter, __resetFilterRegistry, __filterCount } from './core/filter-registry.js'
+export { acquireFilter, registerFusedFilter, __resetFilterRegistry, __filterCount } from './core/filter-registry.js'
+export {
+  sdRoundedRect,
+  shapeDistance,
+  sminPoly,
+  fusedDistance,
+  fusedGradient,
+  normalize,
+  createFusedDisplacementMap,
+} from './sdf.js'
+export type { RectShape, FusedDisplacementOptions } from './sdf.js'
 export {
   isGlassRefractionSupported,
   isBackdropFilterSupported,
@@ -36,4 +48,5 @@ export function defineAll() {
   defineGlassCard()
   defineGlassNavBar()
   defineGlassBottomBar()
+  defineGlassGroup()
 }

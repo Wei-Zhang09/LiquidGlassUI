@@ -72,7 +72,8 @@ import { isLiquidGlassSupported } from '@liquidglass/rn'
 | `GlassTooltip` 交互 | 同上 | ✅ 3 个用例全过：悬停前不渲染、悬停显示、移开消失 |
 | `GlassMenu` 交互 | 同上 | ✅ 5 个用例全过：初始关闭、打开显示全部项、选中关闭、禁用项不关闭、锚点收到 open 状态 |
 | Web 组件渲染 | `tools/verify-web-showcase.py`，双浏览器 | ✅ 5 类组件 14 个实例全部渲染；Chromium 有折射滤镜、Firefox 降级 frost；无 JS 错误 |
-| Web 组件逻辑 | `npx vitest run`（jsdom） | ✅ 35 个用例：能力门控、降级阶梯、键盘可达、禁用态、属性响应 |
+| Web 组件逻辑 | `npx vitest run`（jsdom） | ✅ 71 个用例：能力门控、降级阶梯、键盘可达、禁用态、属性响应、SDF 融合数学、组接管 |
+| Web 玻璃融合 | 真实浏览器，检查子元素滤镜前缀 | ✅ 组内子元素全部使用 `lg-fused-` 融合滤镜（smoothing=8 与 40 两组） |
 
 截图见 `docs/screenshots/`。
 
@@ -85,7 +86,7 @@ v1 核心组件（跨端一致）：
 | `GlassSurface` 玻璃面 | ● | ● | ● | ● |
 | `GlassCard` 卡片 | ● | ● | ● | ● |
 | `GlassButton` 按钮 | ● | ● | ● | ● |
-| `GlassGroup` 组合容器 | ● | ● | ● | ● |
+| `GlassGroup` 组合容器（SDF 融合） | ● | ○ | ○ | ○ |
 | `GlassNavBar` 顶部导航 | ● | ● | ● | ○ |
 | `GlassBottomBar` 底部标签栏 | ○ | ● | ● | ○ |
 | `GlassDialog` 对话框 | ● | ● | ● | ● |

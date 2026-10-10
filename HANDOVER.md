@@ -106,7 +106,14 @@ LiquidGlassUI/
 - [x] 双浏览器验证通过（`tools/verify-web-showcase.py`）
 - [ ] 待补：`GlassGroup`（SDF 平滑并集融合）/ `GlassDialog` / `GlassSegmentedControl`
 - [x] Web 组件测试（Vitest + jsdom，35 个用例）
-- [ ] 待补：`GlassGroup`（SDF 融合）/ `GlassDialog` / `GlassSegmentedControl`
+- [x] `GlassGroup`（SDF 平滑并集融合）
+- [ ] 待补：`GlassDialog` / `GlassSegmentedControl`
+
+**GlassGroup 的两个要点**：
+1. 融合的正确性基础是 `src/sdf.ts` 的纯数学（sminPoly + 融合距离场梯度），
+   可独立单元测试。新增融合类功能先测数学，再接 DOM。
+2. 子元素**不再各自申请滤镜**，由组统一分配带 `lg-fused-` 前缀的滤镜。
+   若子元素拿到 `lg-filter-`（单形状），说明融合没生效 —— 测试据此断言。
 
 **Web 端测试分层**（重要，别混淆）：
 | 层 | 工具 | 测什么 |

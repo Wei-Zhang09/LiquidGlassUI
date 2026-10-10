@@ -13,7 +13,7 @@ URL = "http://127.0.0.1:8913/examples/web/index.html"
 OUT = ROOT / "docs" / "screenshots"
 
 PROBE = """() => {
-  const tags = ['lg-glass-surface','lg-glass-button','lg-glass-card','lg-glass-navbar','lg-glass-bottombar'];
+  const tags = ['lg-glass-surface','lg-glass-button','lg-glass-card','lg-glass-navbar','lg-glass-bottombar','lg-glass-group'];
   const out = {};
   for (const t of tags) {
     const els = [...document.querySelectorAll(t)];
@@ -25,6 +25,19 @@ PROBE = """() => {
   }
   out.caps = window.__lg ? window.__lg.caps : null;
   out.level = window.__lg ? window.__lg.support : null;
+
+  // 融合验证：组内子元素应拿到 lg-fused- 前缀的滤镜，
+  // 而不是各自申请的单形状滤镜（后者意味着融合没生效）
+  out.fusion = [...document.querySelectorAll('lg-glass-group')].map(g => {
+    const kids = [...g.children];
+    const ids = kids.map(k => k.getAttribute('data-lg-group-filter'));
+    return {
+      smoothing: g.getAttribute('smoothing'),
+      childCount: kids.length,
+      filterIds: ids,
+      allFused: ids.length > 0 && ids.every(i => i && i.startsWith('lg-fused-')),
+    };
+  });
   return out;
 }"""
 
@@ -66,7 +79,7 @@ def main() -> int:
 
         # 五个组件都应渲染
         for tag in ("lg-glass-surface", "lg-glass-button", "lg-glass-card",
-                    "lg-glass-navbar", "lg-glass-bottombar"):
+                    "lg-glass-navbar", "lg-glass-bottombar", "lg-glass-group"):
             n = r[tag]["count"]
             if n == 0:
                 print(f"  [FAIL] {name} {tag} 未渲染")
@@ -93,6 +106,27 @@ def main() -> int:
                 ok = False
             else:
                 print(f"  [ok] {name} 正确降级为 {r['level']}")
+
+        # 融合检查：仅 Chromium 会真正分配融合滤镜
+        groups = r.get("fusion", [])
+        if not groups:
+            print(f"  [FAIL] {name} 未找到任何 lg-glass-group")
+            ok = False
+        for g in groups:
+            if name == "chromium":
+                if not g["allFused"]:
+                    print(f"  [FAIL] chromium 组(smoothing={g['smoothing']}) 未使用融合滤镜: {g['filterIds']}")
+                    ok = False
+                else:
+                    print(f"  [ok] chromium 组(smoothing={g['smoothing']}) "
+                          f"{g['childCount']} 个子元素全部使用融合滤镜")
+            else:
+                # 非 Chromium 不应分配滤镜
+                if any(g["filterIds"]):
+                    print(f"  [FAIL] {name} 不应分配融合滤镜")
+                    ok = False
+                else:
+                    print(f"  [ok] {name} 组未分配滤镜（已降级）")
 
     print("\n结论:", "通过" if ok else "失败")
     return 0 if ok else 1
