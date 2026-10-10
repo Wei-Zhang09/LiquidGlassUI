@@ -9,7 +9,7 @@ import time
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 COMPOSE = ROOT / "packages" / "compose"
-OUT = ROOT / "docs" / "screenshots" / "compose-sidebar.png"
+OUT = ROOT / "docs" / "screenshots" / "compose-desktop-showcase.png"
 TITLE = "LiquidGlassUI Compose Prototype"
 JDK = r"C:\Program Files\Java\jdk-21"
 

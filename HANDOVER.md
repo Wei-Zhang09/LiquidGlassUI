@@ -106,9 +106,13 @@ LiquidGlassUI/
 - [x] **与 tokens 打通**（渲染层闭环已验证）
 - [x] `GlassSidebar`（桌面主导航，含悬停/选中态）
 - [x] `GlassTooltip`（桌面专属，悬停触发）
-- [ ] `GlassMenu`
+- [x] `GlassMenu`（桌面高频，含分隔线/快捷键/禁用项）
 
-**测试写法的三个坑**（都是实测踩出来的）：
+**测试写法的四个坑**（都是实测踩出来的）：
+0. 菜单/提示用 `offset` 绘制在锚点布局边界**之外**，测试根容器太小会报
+   `Cannot start a mouse gesture outside the Compose root bounds`。
+   测试需给足够大的根容器（如 600x600dp），真实使用同理。
+
 1. `assertDoesNotExist` 是 `SemanticsNodeInteraction` 的**成员方法**，不要 import。
 2. v2 测试 API 的 `StandardTestDispatcher` 会**排队协程而非立即执行**，
    `waitForIdle()` 不推进它；用 `waitUntil { onAllNodesWithText(..).fetchSemanticsNodes()... }` 轮询。

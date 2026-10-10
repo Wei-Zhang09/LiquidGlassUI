@@ -70,6 +70,7 @@ import { isLiquidGlassSupported } from '@liquidglass/rn'
 | Compose 中间不变形 | 同上，按到边界距离分桶 | ✅ 内部本底稳定 0.3–0.5；衰减单调 |
 | `GlassSidebar` 交互 | `./gradlew test`（Compose UI 测试） | ✅ 4 个用例全过：点击回调、受控选中、徽标、页眉页脚 |
 | `GlassTooltip` 交互 | 同上 | ✅ 3 个用例全过：悬停前不渲染、悬停显示、移开消失 |
+| `GlassMenu` 交互 | 同上 | ✅ 5 个用例全过：初始关闭、打开显示全部项、选中关闭、禁用项不关闭、锚点收到 open 状态 |
 
 截图见 `docs/screenshots/`。
 
