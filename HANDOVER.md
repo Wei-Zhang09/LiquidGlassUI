@@ -107,7 +107,16 @@ LiquidGlassUI/
 - [ ] 待补：`GlassGroup`（SDF 平滑并集融合）/ `GlassDialog` / `GlassSegmentedControl`
 - [x] Web 组件测试（Vitest + jsdom，35 个用例）
 - [x] `GlassGroup`（SDF 平滑并集融合）
-- [ ] 待补：`GlassDialog` / `GlassSegmentedControl`
+- [x] `GlassDialog`（焦点陷阱/焦点归还/ESC/滚动锁定）
+- [x] `GlassSegmentedControl`（roving tabindex + 方向键导航）
+
+**GlassDialog 的一个教训**：它**不参与 backdrop 折射**（覆盖在全屏遮罩上，
+没有可采样的背景层），所以不走 `initGlass`。但**颜色变量仍必须显式设置** ——
+否则面板与遮罩会落到 CSS 的硬编码 fallback，表现为：
+遮罩几乎不可见、背后内容透进面板、文字读不清。
+视觉复核时发现的，jsdom 测不出来（jsdom 不算样式）。
+模态面板用 `surfaceModal`（不透明度更高）而非 `surface`：
+玻璃面可以透，但模态里的文字必须可读。
 
 **GlassGroup 的两个要点**：
 1. 融合的正确性基础是 `src/sdf.ts` 的纯数学（sminPoly + 融合距离场梯度），

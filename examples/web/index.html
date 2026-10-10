@@ -141,6 +141,34 @@
   </section>
 
   <section>
+    <h2>GlassSegmented — 分段控件</h2>
+    <p class="hint">
+      跨端语义一致的少数控件之一。键盘遵循 radiogroup 惯例：
+      方向键移动、Home/End 跳首尾；roving tabindex 让整组只占一个 Tab 位。
+    </p>
+    <div class="row">
+      <lg-glass-segmented value="week" radius="18">
+        <button data-value="day">日</button>
+        <button data-value="week">周</button>
+        <button data-value="month">月</button>
+        <button data-value="year">年</button>
+      </lg-glass-segmented>
+      <span id="seg-out" style="font-size:13px;opacity:.85">当前：周</span>
+    </div>
+  </section>
+
+  <section>
+    <h2>GlassDialog — 模态对话框</h2>
+    <p class="hint">
+      自绘遮罩（原生 <code>&lt;dialog&gt;</code> 的 <code>::backdrop</code> 不支持
+      backdrop-filter，玻璃会退化）。含焦点陷阱、焦点归还、ESC 关闭、滚动锁定。
+    </p>
+    <div class="row">
+      <lg-glass-button id="open-dialog">打开对话框</lg-glass-button>
+    </div>
+  </section>
+
+  <section>
     <h2>GlassBottomBar — 移动端形态</h2>
     <p class="hint">
       与顶部导航对应，但交互模型不同：条目等宽、图标在上文字在下、<strong>无悬停态</strong>（触屏没有 hover）。
@@ -156,6 +184,15 @@
 
 </div>
 
+<lg-glass-dialog heading="确认删除" radius="26" id="demo-dialog">
+  <p style="margin:0 0 8px">此操作不可撤销。确定要删除这个组件吗？</p>
+  <p style="margin:0;font-size:12px;opacity:.7">
+    焦点陷阱已启用：Tab 不会跑出对话框；关闭后焦点归还给触发按钮。
+  </p>
+  <lg-glass-button slot="footer" id="dlg-cancel">取消</lg-glass-button>
+  <lg-glass-button slot="footer" variant="danger" id="dlg-confirm">删除</lg-glass-button>
+</lg-glass-dialog>
+
 <script type="module">
   import { defineAll, getGlassCapabilities } from '../../packages/web/dist/index.js'
   defineAll()
@@ -166,6 +203,26 @@
     : caps.backdropFilter
       ? '降级：磨砂（无折射）'
       : '降级：实心'
+
+  // 分段控件：监听 lg-change 更新提示文字
+  const seg = document.querySelector('lg-glass-segmented')
+  const segOut = document.getElementById('seg-out')
+  const LABEL = { day: '日', week: '周', month: '月', year: '年' }
+  seg?.addEventListener('lg-change', (e) => {
+    segOut.textContent = '当前：' + (LABEL[e.detail.value] ?? e.detail.value)
+  })
+
+  // 对话框：打开 / 取消 / 确认
+  const dlg = document.getElementById('demo-dialog')
+  document.getElementById('open-dialog')?.addEventListener('click', () => {
+    dlg.setAttribute('open', '')
+  })
+  document.getElementById('dlg-cancel')?.addEventListener('click', () => {
+    dlg.removeAttribute('open')
+  })
+  document.getElementById('dlg-confirm')?.addEventListener('click', () => {
+    dlg.removeAttribute('open')
+  })
 
   requestAnimationFrame(() => requestAnimationFrame(() => {
     const el = document.querySelector('lg-glass-surface')

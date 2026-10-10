@@ -13,7 +13,7 @@ URL = "http://127.0.0.1:8913/examples/web/index.html"
 OUT = ROOT / "docs" / "screenshots"
 
 PROBE = """() => {
-  const tags = ['lg-glass-surface','lg-glass-button','lg-glass-card','lg-glass-navbar','lg-glass-bottombar','lg-glass-group'];
+  const tags = ['lg-glass-surface','lg-glass-button','lg-glass-card','lg-glass-navbar','lg-glass-bottombar','lg-glass-group','lg-glass-segmented','lg-glass-dialog'];
   const out = {};
   for (const t of tags) {
     const els = [...document.querySelectorAll(t)];
@@ -79,7 +79,8 @@ def main() -> int:
 
         # 五个组件都应渲染
         for tag in ("lg-glass-surface", "lg-glass-button", "lg-glass-card",
-                    "lg-glass-navbar", "lg-glass-bottombar", "lg-glass-group"):
+                    "lg-glass-navbar", "lg-glass-bottombar", "lg-glass-group",
+                    "lg-glass-segmented", "lg-glass-dialog"):
             n = r[tag]["count"]
             if n == 0:
                 print(f"  [FAIL] {name} {tag} 未渲染")

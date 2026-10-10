@@ -8,6 +8,8 @@ export const color = {
     shadow: 'rgba(33, 48, 61, 0.18)',
     innerShadow: 'rgba(102, 128, 150, 0.1)',
     surface: 'rgba(255, 255, 255, 0.44)',
+    overlay: 'rgba(18, 26, 36, 0.55)',
+    surfaceModal: 'rgba(255, 255, 255, 0.82)',
   },
   dark: {
     tint: 'rgba(255, 255, 255, 0.1)',
@@ -16,6 +18,8 @@ export const color = {
     shadow: 'rgba(0, 0, 0, 0.45)',
     innerShadow: 'rgba(0, 0, 0, 0.22)',
     surface: 'rgba(255, 255, 255, 0.1)',
+    overlay: 'rgba(0, 0, 0, 0.68)',
+    surfaceModal: 'rgba(31, 38, 51, 0.86)',
   },
 } as const
 

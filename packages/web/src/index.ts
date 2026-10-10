@@ -4,6 +4,8 @@ import { defineGlassCard } from './elements/glass-card.js'
 import { defineGlassNavBar } from './elements/glass-navbar.js'
 import { defineGlassBottomBar } from './elements/glass-bottombar.js'
 import { defineGlassGroup } from './elements/glass-group.js'
+import { defineGlassDialog } from './elements/glass-dialog.js'
+import { defineGlassSegmented } from './elements/glass-segmented.js'
 
 export { GlassElementBase, SHARED_CSS, LEVEL_BLUR } from './elements/glass-base.js'
 export type { SupportLevel } from './elements/glass-base.js'
@@ -14,6 +16,8 @@ export { defineGlassCard, GlassCardElement } from './elements/glass-card.js'
 export { defineGlassNavBar, GlassNavBarElement } from './elements/glass-navbar.js'
 export { defineGlassBottomBar, GlassBottomBarElement } from './elements/glass-bottombar.js'
 export { defineGlassGroup, GlassGroupElement } from './elements/glass-group.js'
+export { defineGlassDialog, GlassDialogElement } from './elements/glass-dialog.js'
+export { defineGlassSegmented, GlassSegmentedElement } from './elements/glass-segmented.js'
 
 export { acquireFilter, registerFusedFilter, __resetFilterRegistry, __filterCount } from './core/filter-registry.js'
 export {
@@ -49,4 +53,6 @@ export function defineAll() {
   defineGlassNavBar()
   defineGlassBottomBar()
   defineGlassGroup()
+  defineGlassDialog()
+  defineGlassSegmented()
 }

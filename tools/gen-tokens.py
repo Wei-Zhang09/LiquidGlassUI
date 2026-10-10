@@ -43,6 +43,8 @@ def gen_ts(t: dict) -> str:
     shadow: '{rgba(c['shadow'])}',
     innerShadow: '{rgba(c['innerShadow'])}',
     surface: '{rgba(c['surface'])}',
+    overlay: '{rgba(c['overlay'])}',
+    surfaceModal: '{rgba(c['surfaceModal'])}',
   }},"""
 
     return f"""// {HEADER}
