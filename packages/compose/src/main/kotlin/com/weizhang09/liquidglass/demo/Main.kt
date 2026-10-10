@@ -7,7 +7,10 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -33,6 +36,7 @@ import com.weizhang09.liquidglass.GlassLevel
 import com.weizhang09.liquidglass.GlassSidebar
 import com.weizhang09.liquidglass.GlassSidebarItem
 import com.weizhang09.liquidglass.GlassSurface
+import com.weizhang09.liquidglass.GlassTooltip
 import com.weizhang09.liquidglass.tokens.GlassRadiusTokens
 
 /**
@@ -134,6 +138,23 @@ private fun DesktopSidebarDemo() {
                         fontSize = 13.sp,
                         color = Color(0xFF48586A),
                     )
+
+                    // 桌面专属交互：指针悬停显示玻璃提示（触屏无 hover 概念）
+                    GlassTooltip(
+                        text = "GlassTooltip —— 桌面专属，触屏没有悬停",
+                        backdrop = backdrop,
+                        modifier = Modifier.padding(top = 18.dp),
+                    ) {
+                        GlassSurface(
+                            backdrop = backdrop,
+                            modifier = Modifier.width(200.dp).height(44.dp),
+                            shape = CircleShape,
+                            level = GlassLevel.Focused,
+                            refraction = !noLens,
+                        ) {
+                            Text("悬停我", fontSize = 14.sp, color = Color(0xFF1B2733))
+                        }
+                    }
                 }
             }
         }

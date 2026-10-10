@@ -4,40 +4,24 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Text
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.GraphicsLayerScope
-import androidx.compose.ui.graphics.drawscope.DrawScope
-import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.v2.runComposeUiTest
-import androidx.compose.ui.unit.Density
-import com.kyant.backdrop.Backdrop
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 /**
  * GlassSidebar 的交互测试。
  *
- * 为什么用假 Backdrop 而不是 rememberLayerBackdrop()：
+ * 使用共享的 NoopBackdrop（见 NoopBackdrop.kt）而不是 rememberLayerBackdrop()：
  * backdrop 的 GraphicsLayer 会创建 Skia GPU surface，在无头测试进程中
  * 原生崩溃（实测退出码 0xC0000005 / 0xC0000409）。
- * 而组件的点击/选中逻辑与玻璃渲染无关，用空实现的 Backdrop 即可隔离验证。
+ * 而组件的点击/选中逻辑与玻璃渲染无关，用空实现即可隔离验证。
  *
  * 玻璃渲染本身由截图验证（tools/capture-sidebar.py + verify-compose.py）。
  */
-private object NoopBackdrop : Backdrop {
-    override val isCoordinatesDependent: Boolean = false
-    override fun DrawScope.drawBackdrop(
-        density: Density,
-        coordinates: LayoutCoordinates?,
-        layerBlock: (GraphicsLayerScope.() -> Unit)?,
-    ) {
-        // 测试用：不绘制任何内容
-    }
-}
-
 class GlassSidebarTest {
 
     private val items = listOf(

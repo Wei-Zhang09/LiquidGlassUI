@@ -105,7 +105,16 @@ LiquidGlassUI/
 - [x] 玻璃原型可运行并通过 A/B 像素验证
 - [x] **与 tokens 打通**（渲染层闭环已验证）
 - [x] `GlassSidebar`（桌面主导航，含悬停/选中态）
-- [ ] `GlassMenu` / `GlassTooltip`
+- [x] `GlassTooltip`（桌面专属，悬停触发）
+- [ ] `GlassMenu`
+
+**测试写法的三个坑**（都是实测踩出来的）：
+1. `assertDoesNotExist` 是 `SemanticsNodeInteraction` 的**成员方法**，不要 import。
+2. v2 测试 API 的 `StandardTestDispatcher` 会**排队协程而非立即执行**，
+   `waitForIdle()` 不推进它；用 `waitUntil { onAllNodesWithText(..).fetchSemanticsNodes()... }` 轮询。
+3. `GlassTooltip` 用 `offset` 绘制在锚点布局边界之外，`assertIsDisplayed` 会
+   **误报失败**（它要求节点在父级边界内）——对提示框只能用 `assertExists`。
+   这也是真实限制：**父级设 `clip` 会裁掉提示**。
 
 **组件测试的重要约束**：`backdrop` 的 `GraphicsLayer` 会创建 Skia GPU surface，
 在无头测试进程中**原生崩溃**（实测退出码 `0xC0000005` / `0xC0000409`），
