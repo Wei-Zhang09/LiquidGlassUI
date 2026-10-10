@@ -20,6 +20,11 @@ dependencies {
     api("io.github.kyant0:backdrop:2.0.1")
 
     testImplementation(kotlin("test"))
+    // Compose UI 测试：用于验证组件交互（点击/选中），
+    // 比模拟操作系统鼠标事件可靠得多（无需处理 DPI 与窗口坐标）。
+    @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
+    testImplementation(compose.uiTest)
+    testImplementation(compose.desktop.currentOs)
 }
 
 kotlin {
@@ -39,6 +44,12 @@ kotlin {
 
 tasks.test {
     useJUnitPlatform()
+    // Compose 的 GraphicsLayer + Skia runtime shader 在无图形上下文时会原生崩溃
+    // （实测退出码 0xC0000005 / 0xC0000409）。改用 Skiko 软件渲染，
+    // 使组件测试可在无头环境与 CI 中运行。
+    systemProperty("skiko.renderApi", "SOFTWARE")
+    systemProperty("java.awt.headless", "true")
+    jvmArgs("-Xss4m")
 }
 
 compose.desktop {

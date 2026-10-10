@@ -68,6 +68,7 @@ import { isLiquidGlassSupported } from '@liquidglass/rn'
 | Compose 桌面可构建 | Gradle + JDK 21 编译 | ✅ BUILD SUCCESSFUL |
 | Compose 桌面折射生效 | `tools/verify-compose.py`，`LG_NO_LENS=1` 对照 | ✅ 边缘带 mean 8–21（三次独立运行），集中度 16–42× |
 | Compose 中间不变形 | 同上，按到边界距离分桶 | ✅ 内部本底稳定 0.3–0.5；衰减单调 |
+| `GlassSidebar` 交互 | `./gradlew test`（Compose UI 测试） | ✅ 5 个用例全过：点击回调、受控选中、徽标、页眉页脚 |
 
 截图见 `docs/screenshots/`。
 

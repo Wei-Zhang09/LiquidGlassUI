@@ -104,7 +104,16 @@ LiquidGlassUI/
 - [x] 构建链路打通（官方 Compose Multiplatform 插件）
 - [x] 玻璃原型可运行并通过 A/B 像素验证
 - [x] **与 tokens 打通**（渲染层闭环已验证）
-- [ ] 桌面端组件：`GlassSidebar` / `GlassMenu` / `GlassTooltip`（桌面高频）
+- [x] `GlassSidebar`（桌面主导航，含悬停/选中态）
+- [ ] `GlassMenu` / `GlassTooltip`
+
+**组件测试的重要约束**：`backdrop` 的 `GraphicsLayer` 会创建 Skia GPU surface，
+在无头测试进程中**原生崩溃**（实测退出码 `0xC0000005` / `0xC0000409`），
+`skiko.renderApi=SOFTWARE` 也无效。
+对策：**把逻辑与渲染解耦**——
+- 交互逻辑用空实现的 `NoopBackdrop` 测试（`GlassSidebarTest`，5 个用例全过）
+- 玻璃渲染用截图验证（`tools/capture-sidebar.py`）
+不要试图在无头环境测玻璃渲染，那条路走不通。
 
 **tokens 接入要点**：生成物落在 `src/commonMain/kotlin`，而项目是 `kotlin("jvm")`，
 默认只编译 `src/main/kotlin`。必须在 `build.gradle.kts` 显式加：
