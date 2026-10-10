@@ -63,6 +63,12 @@ export const SHARED_CSS = `
   }
 `
 
+/**
+ * 能构成折射边缘带的最小边长（px）。小于此值无法建滤镜，需降级。
+ * 与 filter-registry 里的最小尺寸检查保持一致。
+ */
+const MIN_FILTER_SIZE = 4
+
 /** 材质层级 → 模糊强度。与 Compose 端的 GlassLevel 对应。 */
 export const LEVEL_BLUR: Record<string, string> = {
   plain: 'var(--lg-blur-none, 0px)',
@@ -169,7 +175,18 @@ export abstract class GlassElementBase extends HTMLElement {
     const rect = this.getBoundingClientRect()
     const w = Math.ceil(rect.width)
     const h = Math.ceil(rect.height)
-    if (w < 4 || h < 4) return
+
+    // 区分两种情况：
+    //  - 0×0：元素**还没布局**（初始状态、或从 display:none 切回）。
+    //    此时不能动 support 档位 —— ResizeObserver 稍后会再触发，
+    //    若在这里降级，元素会永久停在 frost 且再也回不到 refraction。
+    //  - 有尺寸但过小：真的构不成边缘带，降级到磨砂，
+    //    否则会留下一块声称支持折射、实际什么都没画的玻璃（静默失败）。
+    if (w <= 0 || h <= 0) return
+    if (w < MIN_FILTER_SIZE || h < MIN_FILTER_SIZE) {
+      this.setAttribute('data-support', 'frost')
+      return
+    }
 
     const radiusAttr = this.getAttribute('radius')
     const radiusPx = radiusAttr ? parseFloat(radiusAttr) : radiusTokens.lg

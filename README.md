@@ -72,6 +72,7 @@ import { isLiquidGlassSupported } from '@liquidglass/rn'
 | `GlassTooltip` 交互 | 同上 | ✅ 3 个用例全过：悬停前不渲染、悬停显示、移开消失 |
 | `GlassMenu` 交互 | 同上 | ✅ 5 个用例全过：初始关闭、打开显示全部项、选中关闭、禁用项不关闭、锚点收到 open 状态 |
 | Web 组件渲染 | `tools/verify-web-showcase.py`，双浏览器 | ✅ 5 类组件 14 个实例全部渲染；Chromium 有折射滤镜、Firefox 降级 frost；无 JS 错误 |
+| Web 组件逻辑 | `npx vitest run`（jsdom） | ✅ 35 个用例：能力门控、降级阶梯、键盘可达、禁用态、属性响应 |
 
 截图见 `docs/screenshots/`。
 

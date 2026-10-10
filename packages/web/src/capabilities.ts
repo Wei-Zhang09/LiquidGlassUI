@@ -17,10 +17,11 @@ export function isGlassRefractionSupported(): boolean {
   if (typeof navigator === 'undefined') return (cached = false)
 
   const ua = navigator.userAgent
-  // headless Chrome 的 UA 是 "HeadlessChrome/..."，纯 /Chrome\// 正则会漏，
-  // 所以优先看 userAgentData（Chromium 系专有）。
+  // 注意：不能用 /\bChrome\/\d+/ —— headless Chrome 的 UA 是 "HeadlessChrome/…"，
+  // 而 "HeadlessChrome" 中 "s" 与 "C" 之间没有词边界，\b 会导致匹配失败。
+  // 这里显式列出两种形态，避免依赖词边界语义。
   const isChromium =
-    'userAgentData' in navigator || /\bChrome\/\d+/.test(ua)
+    'userAgentData' in navigator || /(?:Headless)?Chrome\/\d+/.test(ua)
   const isNonChromium =
     /Firefox|FxiOS|CriOS|EdgiOS/.test(ua) || /^((?!chrome|android).)*safari/i.test(ua)
 

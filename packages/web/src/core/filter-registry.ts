@@ -12,6 +12,24 @@
 import { buildDisplacementMap } from '../refraction.js'
 import { optical } from '../generated/tokens.js'
 
+/**
+ * 判断节点是否为 SVG 命名空间的 `<filter>`。
+ *
+ * 为什么不用 `instanceof SVGFilterElement`：
+ * 该构造器在部分环境（如 jsdom）不存在，且 `instanceof` 对跨文档/跨 realm
+ * 的元素也会失效。真正要断言的语义是"它属于 SVG 命名空间" ——
+ * 若 filter 被 HTML 解析器创建（如经 <template> / DOMParser(text/html)），
+ * 它会是 HTML 命名空间里一个名为 "filter" 的未知元素，
+ * Chromium 会因此静默丢弃整个 backdrop-filter。
+ */
+function isSvgFilterElement(node: Element | null): boolean {
+  return (
+    node != null &&
+    node.namespaceURI === 'http://www.w3.org/2000/svg' &&
+    node.localName === 'filter'
+  )
+}
+
 export interface FilterRequest {
   width: number
   height: number
@@ -110,7 +128,7 @@ export function acquireFilter(req: FilterRequest): string | null {
   )
 
   const node = svgHost.lastElementChild
-  if (!(node instanceof SVGFilterElement)) {
+  if (!isSvgFilterElement(node)) {
     // 命名空间错误会导致整个 backdrop-filter 被静默丢弃 —— 必须显式失败
     node?.remove()
     console.error(

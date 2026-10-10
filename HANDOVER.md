@@ -105,7 +105,22 @@ LiquidGlassUI/
 - [x] Web 示例改用真实照片背景（`examples/web/assets/wallpaper.jpg`）
 - [x] 双浏览器验证通过（`tools/verify-web-showcase.py`）
 - [ ] 待补：`GlassGroup`（SDF 平滑并集融合）/ `GlassDialog` / `GlassSegmentedControl`
-- [ ] Web 组件测试（目前只有渲染验证，缺交互测试）
+- [x] Web 组件测试（Vitest + jsdom，35 个用例）
+- [ ] 待补：`GlassGroup`（SDF 融合）/ `GlassDialog` / `GlassSegmentedControl`
+
+**Web 端测试分层**（重要，别混淆）：
+| 层 | 工具 | 测什么 |
+|---|---|---|
+| 逻辑 | `npx vitest run`（jsdom） | 事件、键盘可达、属性响应、降级档位 |
+| 渲染 | `tools/verify-web-showcase.py`（Playwright） | 真实折射、双浏览器降级、像素 |
+
+**Vitest 三个坑**（都是实测踩出来的）：
+1. `restoreMocks` **不恢复 `vi.stubGlobal`**。必须开 `unstubGlobals: true`，
+   否则前一个用例 stub 的 `navigator`/`CSS` 泄漏到下一个用例，
+   门控测试随机失败（曾因此误判为产品缺陷）。
+2. jsdom 不实现 `canvas.getContext('2d')` 与 `SVGFilterElement`，需在 helpers 里桩掉。
+3. `getBoundingClientRect` 必须在**元素插入 DOM 前**设好 —— connectedCallback
+   会同步跑一次构建，之后改尺寸不会自动重触发。
 
 ### P1 —— Windows 桌面（Compose）
 
