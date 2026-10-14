@@ -38,6 +38,8 @@ import com.weizhang09.liquidglass.GlassBottomBar
 import com.weizhang09.liquidglass.GlassDialog
 import com.weizhang09.liquidglass.GlassDialogAction
 import com.weizhang09.liquidglass.GlassLevel
+import com.weizhang09.liquidglass.GlassMenu
+import com.weizhang09.liquidglass.GlassMenuItem
 import com.weizhang09.liquidglass.GlassSurface
 import com.weizhang09.liquidglass.GlassTabItem
 import com.weizhang09.liquidglass.tokens.GlassRadiusTokens
@@ -70,6 +72,7 @@ private val TABS = listOf(
 private fun AndroidShowcase() {
     var tab by remember { mutableStateOf("components") }
     var dialogVisible by remember { mutableStateOf(false) }
+    var menuOpen by remember { mutableStateOf(false) }
 
     // Android 返回键关闭对话框 —— 移动端必备
     BackHandler(enabled = dialogVisible) { dialogVisible = false }
@@ -129,6 +132,25 @@ private fun AndroidShowcase() {
                 }
             }
 
+            // 桌面组件在移动端的表现 —— 验证架构假设：
+            // 用鼠标悬停驱动的 GlassTooltip 在触屏上不显示；
+            // 而点击驱动的 GlassMenu 能优雅降级。
+            Box(
+                Modifier
+                    .width(180.dp)
+                    .height(48.dp)
+                    .clickable { menuOpen = true }
+            ) {
+                GlassSurface(
+                    backdrop = backdrop,
+                    modifier = Modifier.fillMaxSize(),
+                    shape = CircleShape,
+                    level = GlassLevel.Regular,
+                ) {
+                    Text("桌面组件 GlassMenu", fontSize = 12.sp, color = Color(0xFF1B2733))
+                }
+            }
+
             // 触发底部抽屉对话框
             Box(
                 Modifier
@@ -143,6 +165,33 @@ private fun AndroidShowcase() {
                     level = GlassLevel.Focused,
                 ) {
                     Text("打开对话框", fontSize = 14.sp, color = Color(0xFF1B2733))
+                }
+            }
+        }
+
+        // 桌面组件 GlassMenu 在触屏上：点击驱动，能正常工作
+        Box(Modifier.align(Alignment.TopCenter).padding(top = 90.dp)) {
+            GlassMenu(
+                backdrop = backdrop,
+                items = listOf(
+                    GlassMenuItem("a", "菜单项 A"),
+                    GlassMenuItem("b", "菜单项 B"),
+                    GlassMenuItem("d", "", isDivider = true),
+                    GlassMenuItem("c", "危险项", danger = true),
+                ),
+            ) { open, setOpen ->
+                if (open != menuOpen) menuOpen = open
+                Box(
+                    Modifier.width(160.dp).height(40.dp).clickable { setOpen(!open) }
+                ) {
+                    GlassSurface(
+                        backdrop = backdrop,
+                        modifier = Modifier.fillMaxSize(),
+                        shape = CircleShape,
+                        level = GlassLevel.Focused,
+                    ) {
+                        Text("点开菜单", fontSize = 13.sp, color = Color(0xFF1B2733))
+                    }
                 }
             }
         }

@@ -182,6 +182,33 @@
     </div>
   </section>
 
+  <section>
+    <h2>GlassSwitch — 开关</h2>
+    <p class="hint">
+      <code>role="switch"</code> + <code>aria-checked</code>，空格/回车切换。
+      开关是移动端设置页高频控件，交互模型两端一致。
+    </p>
+    <div class="row">
+      <lg-glass-switch checked aria-label="启用通知"></lg-glass-switch>
+      <span style="font-size:13px;opacity:.85">启用通知</span>
+      <lg-glass-switch aria-label="禁用项" disabled></lg-glass-switch>
+      <span style="font-size:13px;opacity:.85">禁用态</span>
+      <span id="switch-out" style="font-size:13px;opacity:.85">当前：开</span>
+    </div>
+  </section>
+
+  <section>
+    <h2>GlassSlider — 滑块</h2>
+    <p class="hint">
+      用 Pointer Events 统一鼠标与触摸。触屏两个坑：<code>touch-action: none</code>
+      阻止拖动被当成页面滚动；<code>setPointerCapture</code> 让手指移出元素后仍能拖动。
+    </p>
+    <div class="row">
+      <lg-glass-slider min="0" max="100" value="40" aria-label="音量"></lg-glass-slider>
+      <span id="slider-out" style="font-size:13px;opacity:.85">音量：40</span>
+    </div>
+  </section>
+
 </div>
 
 <lg-glass-dialog heading="确认删除" radius="26" id="demo-dialog">
@@ -205,6 +232,18 @@
       : '降级：实心'
 
   // 分段控件：监听 lg-change 更新提示文字
+  const sw = document.querySelector('lg-glass-switch')
+  const swOut = document.getElementById('switch-out')
+  sw.addEventListener('lg-change', (e) => {
+    swOut.textContent = '当前：' + (e.detail.checked ? '开' : '关')
+  })
+
+  const slider = document.querySelector('lg-glass-slider')
+  const sliderOut = document.getElementById('slider-out')
+  slider.addEventListener('lg-change', (e) => {
+    sliderOut.textContent = '音量：' + e.detail.value
+  })
+
   const seg = document.querySelector('lg-glass-segmented')
   const segOut = document.getElementById('seg-out')
   const LABEL = { day: '日', week: '周', month: '月', year: '年' }

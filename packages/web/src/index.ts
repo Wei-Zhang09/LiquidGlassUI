@@ -6,6 +6,8 @@ import { defineGlassBottomBar } from './elements/glass-bottombar.js'
 import { defineGlassGroup } from './elements/glass-group.js'
 import { defineGlassDialog } from './elements/glass-dialog.js'
 import { defineGlassSegmented } from './elements/glass-segmented.js'
+import { defineGlassSwitch } from './elements/glass-switch.js'
+import { defineGlassSlider } from './elements/glass-slider.js'
 
 export { GlassElementBase, SHARED_CSS, LEVEL_BLUR } from './elements/glass-base.js'
 export type { SupportLevel } from './elements/glass-base.js'
@@ -18,6 +20,8 @@ export { defineGlassBottomBar, GlassBottomBarElement } from './elements/glass-bo
 export { defineGlassGroup, GlassGroupElement } from './elements/glass-group.js'
 export { defineGlassDialog, GlassDialogElement } from './elements/glass-dialog.js'
 export { defineGlassSegmented, GlassSegmentedElement } from './elements/glass-segmented.js'
+export { defineGlassSwitch, GlassSwitchElement } from './elements/glass-switch.js'
+export { defineGlassSlider, GlassSliderElement } from './elements/glass-slider.js'
 
 export { acquireFilter, registerFusedFilter, __resetFilterRegistry, __filterCount } from './core/filter-registry.js'
 export {
@@ -55,4 +59,6 @@ export function defineAll() {
   defineGlassGroup()
   defineGlassDialog()
   defineGlassSegmented()
+  defineGlassSwitch()
+  defineGlassSlider()
 }
