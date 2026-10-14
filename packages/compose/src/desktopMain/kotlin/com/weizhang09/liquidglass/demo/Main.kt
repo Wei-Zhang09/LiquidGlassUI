@@ -139,8 +139,11 @@ private fun DesktopShowcase() {
                         modifier = Modifier.padding(top = 20.dp),
                         horizontalArrangement = Arrangement.spacedBy(20.dp),
                     ) {
-                        // 悬停提示（桌面专属）
-                        GlassTooltip(text = "桌面专属：触屏没有悬停", backdrop = backdrop) {
+                        // 提示框：桌面悬停显示，触屏长按显示
+                        GlassTooltip(
+                            text = "悬停或长按显示（触屏用长按）",
+                            backdrop = backdrop,
+                        ) {
                             GlassSurface(
                                 backdrop = backdrop,
                                 modifier = Modifier.width(180.dp).height(44.dp),

@@ -198,6 +198,7 @@ python tools/verify-compose.py                                                  
 - [x] Android 示例 App + **真机运行验证通过**（Xiaomi 13 · Android 16 / API 36 / arm64）
 - [x] Android 侧组件测试（`commonTest` 共享，两端都跑）
 - [x] 移动端组件：`GlassBottomBar` / `GlassDialog`
+- [x] `GlassTooltip` 补长按触发（触屏可用，ADR-0003 的遗留缺陷已修）
 
 **Compose 组件清单（8 个，全在 commonMain）**：
 
@@ -217,6 +218,12 @@ python tools/verify-compose.py                                                  
 
 **真机限制（小米）**：`adb shell input tap` 被安全策略拦（`INJECT_EVENTS` 权限），
 无法脚本化点击。交互逻辑靠 commonTest 覆盖，真机只验证渲染与启动。
+
+**待验证（设备已断开）**：`GlassTooltip` 长按的真机行为未经真机验证 ——
+实现完成时 Xiaomi 13 已从 USB 断开。正确性由 8 个单元测试覆盖
+（短按不受影响 / 长按显示 / 长按不触发点击 / 可关闭 / 松手后保持 /
+关闭那次点击仍生效 / 连续短按不丢 / 悬停路径未破坏），
+但**真机手感未评估**。重新连接设备后可复验。
 
 **Android 构建环境要求（踩过的坑）**：
 

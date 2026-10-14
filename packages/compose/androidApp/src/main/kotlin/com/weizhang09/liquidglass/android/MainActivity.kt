@@ -42,6 +42,7 @@ import com.weizhang09.liquidglass.GlassMenu
 import com.weizhang09.liquidglass.GlassMenuItem
 import com.weizhang09.liquidglass.GlassSurface
 import com.weizhang09.liquidglass.GlassTabItem
+import com.weizhang09.liquidglass.GlassTooltip
 import com.weizhang09.liquidglass.tokens.GlassRadiusTokens
 
 /**
@@ -73,6 +74,7 @@ private fun AndroidShowcase() {
     var tab by remember { mutableStateOf("components") }
     var dialogVisible by remember { mutableStateOf(false) }
     var menuOpen by remember { mutableStateOf(false) }
+    var tipClicks by remember { mutableStateOf(0) }
 
     // Android 返回键关闭对话框 —— 移动端必备
     BackHandler(enabled = dialogVisible) { dialogVisible = false }
@@ -133,8 +135,8 @@ private fun AndroidShowcase() {
             }
 
             // 桌面组件在移动端的表现 —— 验证架构假设：
-            // 用鼠标悬停驱动的 GlassTooltip 在触屏上不显示；
-            // 而点击驱动的 GlassMenu 能优雅降级。
+            // 点击驱动的 GlassMenu 能优雅降级（见下方）；
+            // 依赖 hover 的 GlassTooltip 已补长按触发（见下方）。
             Box(
                 Modifier
                     .width(180.dp)
@@ -148,6 +150,34 @@ private fun AndroidShowcase() {
                     level = GlassLevel.Regular,
                 ) {
                     Text("桌面组件 GlassMenu", fontSize = 12.sp, color = Color(0xFF1B2733))
+                }
+            }
+
+            // GlassTooltip 长按 —— 触屏上 hover 的替代语义。
+            // 长按按钮应弹出提示；短按则照常触发按钮自身动作。
+            GlassTooltip(
+                text = "长按提示：触屏没有 hover，用长按替代",
+                backdrop = backdrop,
+                showDelayMillis = 0,
+            ) {
+                Box(
+                    Modifier
+                        .width(180.dp)
+                        .height(48.dp)
+                        .clickable { tipClicks++ }
+                ) {
+                    GlassSurface(
+                        backdrop = backdrop,
+                        modifier = Modifier.fillMaxSize(),
+                        shape = CircleShape,
+                        level = GlassLevel.Regular,
+                    ) {
+                        Text(
+                            "长按我看提示",
+                            fontSize = 12.sp,
+                            color = Color(0xFF1B2733),
+                        )
+                    }
                 }
             }
 

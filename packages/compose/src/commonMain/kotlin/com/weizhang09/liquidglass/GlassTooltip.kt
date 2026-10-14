@@ -1,5 +1,8 @@
 package com.weizhang09.liquidglass
 
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.waitForUpOrCancellation
 import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
@@ -17,6 +20,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.AwaitPointerEventScope
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.changedToUpIgnoreConsumed
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.IntOffset
@@ -26,6 +33,7 @@ import com.kyant.backdrop.Backdrop
 import com.weizhang09.liquidglass.tokens.GlassMotionTokens
 import com.weizhang09.liquidglass.tokens.GlassRadiusTokens
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.withTimeoutOrNull
 
 /** 提示框相对锚点的位置。 */
 enum class TooltipPlacement {
@@ -37,11 +45,25 @@ enum class TooltipPlacement {
 }
 
 /**
- * 液态玻璃提示框 —— 桌面端专属交互。
+ * 液态玻璃提示框 —— 双端可用。
  *
- * 平台适配说明：tooltip 依赖指针悬停，**触屏没有 hover 概念**，
- * 因此这是桌面端专有组件，移动端不提供对应实现
- * （移动端的等价物是长按弹出，语义不同，留待需要时单独设计）。
+ * ## 两种触发方式（平台分化在这里的具体解法）
+ *
+ * | 设备 | 触发 | 机制 |
+ * |---|---|---|
+ * | 指针（鼠标/触控板） | 悬停 | `hoverable` + `collectIsHoveredAsState` |
+ * | 触屏 | **长按** | 自定义手势检测（见下） |
+ *
+ * 触屏没有 hover，长按是各平台通用的替代语义（iOS/Android 原生 tooltip 同此）。
+ *
+ * ## 为什么不用 detectTapGestures
+ * `detectTapGestures` 在收到 down 时**立即消费**事件，会破坏子元素自身的点击。
+ * 而 tooltip 的锚点通常是按钮，需要：
+ *  - **短按** → 照常触发锚点的动作（用户要的是那个功能）
+ *  - **长按** → 显示提示，且**不**触发动作
+ *
+ * 因此这里手写检测：在 `PointerEventPass.Initial` 上监听（父级先于子级收到事件），
+ * 超时前抬起则完全不干预；判定为长按后消费后续事件，子元素因事件被消费而取消点击。
  *
  * ## 为什么不用 Popup
  * Compose Desktop 的 `Popup` 会创建**独立窗口**，它采样不到父级的 backdrop，
@@ -59,7 +81,9 @@ enum class TooltipPlacement {
  * ```
  *
  * @param showDelayMillis 悬停多久后显示。默认取 tokens 的 slow（400ms）——
- *                       这是交互时序，属于设计参数，因此走 tokens 而非硬编码
+ *                       这是交互时序，属于设计参数，因此走 tokens 而非硬编码。
+ *                       长按不受此值影响，用系统长按超时。
+ * @param enableLongPress 是否启用长按触发。锚点自身需要长按时可关掉。
  */
 @Composable
 fun GlassTooltip(
@@ -68,11 +92,13 @@ fun GlassTooltip(
     modifier: Modifier = Modifier,
     placement: TooltipPlacement = TooltipPlacement.Below,
     showDelayMillis: Int = GlassMotionTokens.SLOW,
+    enableLongPress: Boolean = true,
     content: @Composable () -> Unit,
 ) {
     val interaction = remember { MutableInteractionSource() }
     val hovered by interaction.collectIsHoveredAsState()
     var delayedVisible by remember { mutableStateOf(false) }
+    var touchVisible by remember { mutableStateOf(false) }
     var anchorHeight by remember { mutableIntStateOf(0) }
     var tooltipHeight by remember { mutableIntStateOf(0) }
     val density = LocalDensity.current
@@ -91,12 +117,55 @@ fun GlassTooltip(
     // 延迟为 0 时直接从 hovered 派生，**不经过协程**。
     // 这样"无延迟"是真正的同步语义（也使其可在测试中确定性地断言）；
     // 若走 LaunchedEffect，即使跳过 delay，状态更新仍需等待协程调度。
-    val visible = if (showDelayMillis <= 0) hovered else delayedVisible
+    val visible = touchVisible || if (showDelayMillis <= 0) hovered else delayedVisible
 
     Box(modifier) {
         Box(
             Modifier
                 .hoverable(interaction)
+                .then(
+                    if (enableLongPress) {
+                        Modifier.pointerInput(Unit) {
+                            awaitEachGesture {
+                                // Initial 通道：父级先于子级收到事件。
+                                // 不消费 down —— 短按要让子元素正常工作。
+                                awaitFirstDown(
+                                    requireUnconsumed = false,
+                                    pass = PointerEventPass.Initial,
+                                )
+
+                                // 上次长按留下的提示还显示着 → 本次按下先关掉。
+                                // 这样"再点一下关闭"是自然的，且该次点击照常生效。
+                                if (touchVisible) touchVisible = false
+
+                                // waitForUpOrCancellation 返回 null 有**两种**原因：
+                                //   1) 超时 → 确实是长按
+                                //   2) 事件被他人消费（如父级滚动接管）→ 手势取消
+                                // 必须区分，否则在可滚动列表里一滚就弹提示。
+                                var cancelled = false
+                                val up = withTimeoutOrNull(
+                                    viewConfiguration.longPressTimeoutMillis,
+                                ) {
+                                    val r = waitForUpOrCancellation(PointerEventPass.Initial)
+                                    if (r == null) cancelled = true
+                                    r
+                                }
+
+                                if (up == null && !cancelled) {
+                                    // 长按：显示提示，并消费到抬起以阻止锚点被点击。
+                                    //
+                                    // **松手后不隐藏** —— 这是必要的：按住时手指正盖着
+                                    // 提示文字，松手就消失等于用户根本读不到。
+                                    // 改为保持显示，下次按下时关闭（见上方）。
+                                    touchVisible = true
+                                    consumeUntilUp()
+                                }
+                            }
+                        }
+                    } else {
+                        Modifier
+                    },
+                )
                 .onSizeChanged { anchorHeight = it.height },
         ) {
             content()
@@ -127,6 +196,21 @@ fun GlassTooltip(
                 }
             }
         }
+    }
+}
+
+/**
+ * 消费后续事件直到抬起。
+ *
+ * 在 Initial 通道消费，子元素在 Main 通道只能看到已消费的事件，
+ * 其按压被取消 —— 这样长按不会同时触发锚点的点击。
+ */
+private suspend fun AwaitPointerEventScope.consumeUntilUp() {
+    var up = false
+    while (!up) {
+        val event = awaitPointerEvent(PointerEventPass.Initial)
+        event.changes.forEach { it.consume() }
+        up = event.changes.all { it.changedToUpIgnoreConsumed() }
     }
 }
 
