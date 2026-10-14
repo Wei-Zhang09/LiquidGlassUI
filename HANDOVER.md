@@ -201,6 +201,15 @@ python tools/verify-compose.py                                                  
 - [x] `GlassTooltip` 补长按触发（触屏可用，ADR-0003 的遗留缺陷已修）
 - [x] `GlassGroup` 补到 Compose（SDF 融合，走自定义 AGSL 运行时着色器）
 - [x] API 文档站（VitePress + 液态玻璃主题，20 页）
+- [x] 文档站部署到 GitHub Pages：https://wei-zhang09.github.io/LiquidGlassUI/
+
+**Pages 部署要点**：
+- 仓库必须 **public**（私有仓库用 Pages 需 GitHub Pro；站点设为私有可见需 Enterprise Cloud）
+- 需在 Settings→Pages 把 Source 设为 **GitHub Actions**（已用 API 完成）
+- `base` 必须是 `/<repo>/`，否则子路径下资源全 404 —— 由 `DOCS_BASE` 环境变量控制，
+  CI 里用 `${{ github.event.repository.name }}` 动态取
+- 首次部署 GitHub 侧可能卡在 `updating_pages` 直到 10 分钟超时被取消；
+  重新触发即成功（本次第 4 次运行才过）
 
 **Compose 组件清单（8 个，全在 commonMain）**：
 
