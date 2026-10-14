@@ -20,7 +20,7 @@ Apple 在 iOS 26 引入 Liquid Glass 材质后，各生态出现了大量独立�
 |---|---|---|---|---|---|
 | P0 | Web（React + Web Components） | `@liquidglass/web` | ✅ 仅 Chromium | 现代浏览器 | ✅ 双浏览器实测 |
 | P1 | Windows 桌面 | `liquidglass-compose` | ✅ AGSL 运行时着色器 | JVM 11+ | ✅ |
-| P2 | Android | `liquidglass-compose` | ✅ AGSL 运行时着色器 | API 33 | ✅ |
+| P2 | Android | `liquidglass-compose` | ✅ AGSL 运行时着色器 | API 33 | ✅ 真机验证 |
 | P2 | macOS / Linux 桌面 | `liquidglass-compose` | ✅ | JVM 11+ | ⚠️ 未验证 |
 | P3 | iOS / SwiftUI + UIKit | `LiquidGlassUI` (SwiftPM) | ✅ 系统材质 | iOS 26 | ❌ 无 macOS |
 | P3 | React Native | `@liquidglass/rn` | ✅ 仅 iOS | iOS 26 + RN 0.80+ | ❌ 无 macOS |
@@ -75,6 +75,7 @@ import { isLiquidGlassSupported } from '@liquidglass/rn'
 | Web 组件逻辑 | `npx vitest run`（jsdom） | ✅ 99 个用例：能力门控、降级阶梯、键盘可达、禁用态、属性响应、SDF 融合数学、组接管、焦点陷阱、roving tabindex |
 | Web 交互（真实浏览器） | `tools/verify-web-interaction.py` | ✅ 对话框开/关、遮罩铺满、滚动锁定与恢复、分段控件切换与 aria 同步 |
 | Web 玻璃融合 | 真实浏览器，检查子元素滤镜前缀 | ✅ 组内子元素全部使用 `lg-fused-` 融合滤镜（smoothing=8 与 40 两组） |
+| Android 真机运行 | Xiaomi 13 · Android 16 / API 36 | ✅ 安装、启动、进程存活、无致命异常；边缘折射在真机可见 |
 
 截图见 `docs/screenshots/`。
 

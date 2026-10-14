@@ -193,7 +193,38 @@ python tools/verify-compose.py                                                  
 
 ### P2 —— 移动端
 
-- [ ] Android 侧与桌面端共用 Compose 代码，随 P1 一起推进
+- [x] Compose 工程改造为多目标（commonMain 共享 / desktopMain / androidMain）
+- [x] Android 库构建通过（产出 AAR）
+- [x] Android 示例 App + **真机运行验证通过**（Xiaomi 13 · Android 16 / API 36 / arm64）
+- [ ] 待补：Android 侧组件测试（目前测试都在 desktopTest）
+
+**Android 构建环境要求（踩过的坑）**：
+
+| 项 | 值 | 原因 |
+|---|---|---|
+| AGP | **9.4.1** | Compose 1.12.1 的 AndroidX 依赖要求 AGP >= 9.1 |
+| Gradle | **9.8.1** | AGP 9.x 要求 |
+| compileSdk | **37** + buildTools 37.0.0 | 同上 |
+| 插件 | `com.android.kotlin.multiplatform.library` | AGP 9 下 `com.android.library` 不再适用于 KMP |
+| Android 配置位置 | `kotlin { android { } }` | 不是 `androidTarget`，也不是顶层 `android { }` |
+| gradle.properties | `android.useAndroidX=true` | 否则 checkDesktopMainComposeLibrariesCompatibility 失败 |
+| gradle.properties | `android.builtInKotlin=false` + `android.newDsl=false` | AGP 9 内置 Kotlin 的产物不进 dex（类编译出来但 APK 里没有），用官方开关回到传统路径 |
+| local.properties | `sdk.dir` 用**正斜杠** | Properties 里反斜杠是转义符，否则 SdkLocator 报"文件名语法不正确" |
+| 任务名 | `:androidApp:assembleDebug` / `compileAndroidMain` | 不是 `assembleDebug`（KMP 插件按变体命名） |
+
+**Android 真机验证流程**（模拟器不可用时的替代方案）：
+```bash
+ADB="C:/Users/zw/AppData/Local/Android/Sdk/platform-tools/adb.exe"
+$ADB install -r androidApp/build/outputs/apk/debug/androidApp-debug.apk
+$ADB shell am start -W -n com.weizhang09.liquidglass.android/.MainActivity
+$ADB exec-out screencap -p > docs/screenshots/android-device.png
+```
+小米设备需在开发者选项里**额外打开「USB 安装」**，否则报 `INSTALL_FAILED_USER_RESTRICTED`。
+
+**本机模拟器不可用**（已实测）：无硬件 GPU 加速，只能用 swiftshader 软件渲染，
+qemu 进程实测占 **7.3GB**，把 15.6GB 内存压到 0.3GB，导致 Android 的
+`system_server` 反复被 OOM 杀掉 —— 表现为 `dumpsys` 与 `am start` 结论矛盾、
+`boot_completed=1` 但服务不可用。**不要再在本机跑模拟器，用真机。**
 
 ### P3 —— iOS / RN（阻塞）
 

@@ -3,10 +3,10 @@ import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
-    kotlin("multiplatform") version "2.4.21"
-    id("org.jetbrains.compose") version "1.12.1"
-    id("org.jetbrains.kotlin.plugin.compose") version "2.4.21"
-    id("com.android.kotlin.multiplatform.library") version "9.4.1"
+    kotlin("multiplatform")
+    id("org.jetbrains.compose")
+    id("org.jetbrains.kotlin.plugin.compose")
+    id("com.android.kotlin.multiplatform.library")
 }
 
 group = "com.weizhang09.liquidglass"
