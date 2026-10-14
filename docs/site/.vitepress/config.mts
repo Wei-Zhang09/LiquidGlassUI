@@ -15,8 +15,16 @@ export default defineConfig({
   title: 'LiquidGlassUI',
   description: '跨端液态玻璃 UI 组件库 —— Web / Windows 桌面 / Android',
 
-  // 站内资源（演示页用的示例背景图等）
-  public: 'public',
+  /**
+   * 部署基路径。
+   *
+   * GitHub Pages 的项目站点部署在子路径 `/LiquidGlassUI/` 下，
+   * 若 `base` 仍为 `/`，所有资源会 404（CSS/JS 都加载不到，页面白屏）。
+   * 这是 Pages 部署最常见的失败原因，所以由环境变量显式控制：
+   *  - 本地 `npm run dev` / `npm run build`：base = '/'（默认）
+   *  - CI 部署：设 `DOCS_BASE=/LiquidGlassUI/`
+   */
+  base: process.env.DOCS_BASE || '/',
 
   themeConfig: {
     logo: undefined,
