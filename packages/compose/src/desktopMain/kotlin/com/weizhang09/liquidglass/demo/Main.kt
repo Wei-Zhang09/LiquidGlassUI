@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -18,6 +19,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.graphics.painter.Painter
@@ -33,12 +35,14 @@ import androidx.compose.ui.window.rememberWindowState
 import com.kyant.backdrop.backdrops.layerBackdrop
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.weizhang09.liquidglass.GlassLevel
+import com.weizhang09.liquidglass.GlassGroup
 import com.weizhang09.liquidglass.GlassMenu
 import com.weizhang09.liquidglass.GlassMenuItem
 import com.weizhang09.liquidglass.GlassSidebar
 import com.weizhang09.liquidglass.GlassSidebarItem
 import com.weizhang09.liquidglass.GlassSurface
 import com.weizhang09.liquidglass.GlassTooltip
+import com.weizhang09.liquidglass.RectShape
 import com.weizhang09.liquidglass.tokens.GlassRadiusTokens
 import java.awt.image.BufferedImage
 import javax.imageio.ImageIO
@@ -129,11 +133,57 @@ private fun DesktopShowcase() {
                         color = Color(0xFF1B2733),
                     )
                     Text(
-                        "桌面端组件：GlassSurface / GlassSidebar / GlassTooltip / GlassMenu\n" +
+                        "桌面端组件：GlassSurface / GlassSidebar / GlassTooltip / " +
+                            "GlassMenu / GlassGroup\n" +
                             "背景为真实照片 —— 折射需要纹理才可见。",
                         fontSize = 13.sp,
                         color = Color(0xFF48586A),
                     )
+
+                    // GlassGroup：三个圆融合成一团（SDF 平滑并集）。
+                    // 若只是叠放，三个圆会有清晰分界；真融合的接缝是连续的。
+                    Text(
+                        "GlassGroup — SDF 融合（三个圆融成一团）",
+                        fontSize = 12.sp,
+                        color = Color(0xFF48586A),
+                        modifier = Modifier.padding(top = 18.dp),
+                    )
+                    // 两个形状拉开一段距离（18dp 缝隙）：只有融合才会把中间
+                    // 填成"花生"形；不融合时是两个独立的圆，中间透明。
+                    Row(horizontalArrangement = Arrangement.spacedBy(24.dp)) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            GlassGroup(
+                                backdrop = backdrop,
+                                shapes = listOf(
+                                    RectShape(0f, 0f, 56f, 56f, 28f),
+                                    RectShape(74f, 0f, 56f, 56f, 28f),
+                                ),
+                                smoothing = 22.dp,
+                                modifier = Modifier.padding(top = 6.dp).size(130.dp, 56.dp),
+                            ) {
+                                Text(
+                                    "融合",
+                                    fontSize = 12.sp,
+                                    color = Color(0xFF1B2733),
+                                    modifier = Modifier.align(Alignment.Center),
+                                )
+                            }
+                            Text("smoothing=22", fontSize = 10.sp, color = Color(0xFF48586A))
+                        }
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            // 对照组：smoothing=0 → 只做普通并集，中间应断开
+                            GlassGroup(
+                                backdrop = backdrop,
+                                shapes = listOf(
+                                    RectShape(0f, 0f, 56f, 56f, 28f),
+                                    RectShape(74f, 0f, 56f, 56f, 28f),
+                                ),
+                                smoothing = 0.dp,
+                                modifier = Modifier.padding(top = 6.dp).size(130.dp, 56.dp),
+                            ) {}
+                            Text("smoothing=0", fontSize = 10.sp, color = Color(0xFF48586A))
+                        }
+                    }
 
                     Row(
                         modifier = Modifier.padding(top = 20.dp),

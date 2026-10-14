@@ -199,6 +199,7 @@ python tools/verify-compose.py                                                  
 - [x] Android 侧组件测试（`commonTest` 共享，两端都跑）
 - [x] 移动端组件：`GlassBottomBar` / `GlassDialog`
 - [x] `GlassTooltip` 补长按触发（触屏可用，ADR-0003 的遗留缺陷已修）
+- [x] `GlassGroup` 补到 Compose（SDF 融合，走自定义 AGSL 运行时着色器）
 
 **Compose 组件清单（8 个，全在 commonMain）**：
 
@@ -212,9 +213,16 @@ python tools/verify-compose.py                                                  
 | `GlassDialog` | 底部抽屉 | **移动**（拇指可达） |
 
 **测试分层**：
-- `commonTest`：两端共享（`NoopBackdrop` + 移动端组件测试）
-- `desktopTest`：桌面专属（用 `runComposeUiTest`）
-- 共 25 个测试，全部通过
+- `commonTest`：两端共享（`NoopBackdrop` + 移动端组件测试 + SDF 数学）
+- `desktopTest`：桌面专属（`runComposeUiTest` + 着色器真实编译）
+- 共 65 个测试，全部通过
+
+**GlassGroup（Compose）关键事实**：
+- 库自带 `lens()` **只支持圆角矩形**，传自定义 Shape 会抛
+  `Only RoundedRectangularShape or CornerBasedShape is supported in lens effects`
+- 因此改用 `runtimeShaderEffect` + 自定义 AGSL（详见 ADR-0004）
+- 形状上限 8 个（AGSL 循环边界须为编译期常量）
+- **着色器编译失败会静默退化成矩形**，所以必须有 `FusedShaderTest` 真实编译验证
 
 **真机限制（小米）**：`adb shell input tap` 被安全策略拦（`INJECT_EVENTS` 权限），
 无法脚本化点击。交互逻辑靠 commonTest 覆盖，真机只验证渲染与启动。
