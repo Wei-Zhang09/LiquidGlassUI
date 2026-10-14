@@ -200,6 +200,7 @@ python tools/verify-compose.py                                                  
 - [x] 移动端组件：`GlassBottomBar` / `GlassDialog`
 - [x] `GlassTooltip` 补长按触发（触屏可用，ADR-0003 的遗留缺陷已修）
 - [x] `GlassGroup` 补到 Compose（SDF 融合，走自定义 AGSL 运行时着色器）
+- [x] API 文档站（VitePress + 液态玻璃主题，20 页）
 
 **Compose 组件清单（8 个，全在 commonMain）**：
 
