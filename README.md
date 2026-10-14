@@ -108,7 +108,9 @@ v2 平台特色组件：`GlassMenu`、`GlassSidebar`、`GlassSearchBar`、`Glass
 ```
 LiquidGlassUI/
 ├── docs/
-│   └── adr/                    架构决策记录
+│   ├── adr/                    架构决策记录
+│   ├── screenshots/            验证截图（像素级/真机证据）
+│   └── site/                   文档站（VitePress + 液态玻璃主题）
 ├── packages/
 │   ├── tokens/                 设计参数唯一真源（JSON → 四端生成）
 │   ├── web/                    React + TypeScript
@@ -116,8 +118,31 @@ LiquidGlassUI/
 │   ├── apple/                  Swift Package（SwiftUI + UIKit）
 │   └── rn/                     React Native
 ├── examples/                   各端可运行示例
-└── tools/                      token 生成脚本
+└── tools/                      token 生成、验证与截图脚本
 ```
+
+## 文档站
+
+**在线：<https://wei-zhang09.github.io/LiquidGlassUI/>**
+
+```bash
+cd docs/site
+npm install
+npm run dev      # http://localhost:5173
+npm run build    # 输出到 .vitepress/dist
+```
+
+文档站**本身就是用本库的材质做的**（dogfooding）—— 导航、侧边栏、代码块、
+API 表格全部玻璃化。一个讲液态玻璃的库，文档用扁平皮肤是自相矛盾的。
+
+演示区直接引用 `packages/web/src` 的源码，保证文档跑的是当前源码而非旧 dist。
+
+::: 玻璃必须有东西可折射
+演示区默认铺高对比测试图（细网格 + 色块）。玻璃放在纯色背景上看不出效果 ——
+这是本项目反复踩到的坑，详见 `docs/site/guide/design.md`。
+:::
+
+部署由 `.github/workflows/deploy-docs.yml` 自动完成（push 到 main 时触发）。
 
 ## 参考实现
 
