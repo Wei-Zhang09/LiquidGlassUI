@@ -13,6 +13,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -37,11 +39,13 @@ import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.weizhang09.liquidglass.GlassBottomBar
 import com.weizhang09.liquidglass.GlassDialog
 import com.weizhang09.liquidglass.GlassDialogAction
+import com.weizhang09.liquidglass.GlassGroup
 import com.weizhang09.liquidglass.GlassLevel
 import com.weizhang09.liquidglass.GlassMenu
 import com.weizhang09.liquidglass.GlassMenuItem
 import com.weizhang09.liquidglass.GlassSurface
 import com.weizhang09.liquidglass.GlassTabItem
+import com.weizhang09.liquidglass.RectShape
 import com.weizhang09.liquidglass.GlassTooltip
 import com.weizhang09.liquidglass.tokens.GlassRadiusTokens
 
@@ -197,7 +201,49 @@ private fun AndroidShowcase() {
                     Text("打开对话框", fontSize = 14.sp, color = Color(0xFF1B2733))
                 }
             }
+            // GlassGroup：SDF 融合。Android 走 Skia 运行时着色器（与桌面同路径），
+            // 但 AGSL 在 Android 上的支持情况与桌面不同 —— 这是本次真机验证的重点。
+            // 注意：这里不用绝对定位（align + padding），否则会叠在主内容列上。
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(6.dp),
+                modifier = Modifier.padding(top = 16.dp),
+            ) {
+                Text(
+                    "GlassGroup — 两个圆融合",
+                    fontSize = 11.sp,
+                    color = Color(0xFF1B2733),
+                )
+                Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        GlassGroup(
+                            backdrop = backdrop,
+                            shapes = listOf(
+                                RectShape(0f, 0f, 56f, 56f, 28f),
+                                RectShape(74f, 0f, 56f, 56f, 28f),
+                            ),
+                            smoothing = 22.dp,
+                            modifier = Modifier.size(130.dp, 56.dp),
+                        ) {}
+                        Text("smoothing=22", fontSize = 9.sp, color = Color(0xFF1B2733))
+                    }
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        GlassGroup(
+                            backdrop = backdrop,
+                            shapes = listOf(
+                                RectShape(0f, 0f, 56f, 56f, 28f),
+                                RectShape(74f, 0f, 56f, 56f, 28f),
+                            ),
+                            smoothing = 0.dp,
+                            modifier = Modifier.size(130.dp, 56.dp),
+                        ) {}
+                        Text("smoothing=0", fontSize = 9.sp, color = Color(0xFF1B2733))
+                    }
+                }
+            }
+
         }
+
 
         // 桌面组件 GlassMenu 在触屏上：点击驱动，能正常工作
         Box(Modifier.align(Alignment.TopCenter).padding(top = 90.dp)) {
@@ -225,6 +271,7 @@ private fun AndroidShowcase() {
                 }
             }
         }
+
 
         // 底部标签栏（移动端主导航）
         GlassBottomBar(
