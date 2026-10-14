@@ -196,7 +196,27 @@ python tools/verify-compose.py                                                  
 - [x] Compose 工程改造为多目标（commonMain 共享 / desktopMain / androidMain）
 - [x] Android 库构建通过（产出 AAR）
 - [x] Android 示例 App + **真机运行验证通过**（Xiaomi 13 · Android 16 / API 36 / arm64）
-- [ ] 待补：Android 侧组件测试（目前测试都在 desktopTest）
+- [x] Android 侧组件测试（`commonTest` 共享，两端都跑）
+- [x] 移动端组件：`GlassBottomBar` / `GlassDialog`
+
+**Compose 组件清单（8 个，全在 commonMain）**：
+
+| 组件 | 定位 | 平台侧重 |
+|---|---|---|
+| `GlassSurface` | 材质底板 | 通用 |
+| `GlassSidebar` | 左侧导航 | **桌面**（悬停） |
+| `GlassMenu` | 下拉菜单 | **桌面**（点击外部关闭） |
+| `GlassTooltip` | 悬停提示 | **桌面**（触屏无 hover） |
+| `GlassBottomBar` | 底部标签栏 | **移动**（按压反馈） |
+| `GlassDialog` | 底部抽屉 | **移动**（拇指可达） |
+
+**测试分层**：
+- `commonTest`：两端共享（`NoopBackdrop` + 移动端组件测试）
+- `desktopTest`：桌面专属（用 `runComposeUiTest`）
+- 共 25 个测试，全部通过
+
+**真机限制（小米）**：`adb shell input tap` 被安全策略拦（`INJECT_EVENTS` 权限），
+无法脚本化点击。交互逻辑靠 commonTest 覆盖，真机只验证渲染与启动。
 
 **Android 构建环境要求（踩过的坑）**：
 

@@ -52,6 +52,13 @@ kotlin {
             }
         }
 
+        // 两端共享的测试工具与测试（NoopBackdrop、移动端组件测试）
+        val commonTest by getting {
+            dependencies {
+                implementation(kotlin("test"))
+            }
+        }
+
         val desktopTest by getting {
             dependencies {
                 implementation(kotlin("test"))

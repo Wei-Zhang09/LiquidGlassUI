@@ -76,6 +76,7 @@ import { isLiquidGlassSupported } from '@liquidglass/rn'
 | Web 交互（真实浏览器） | `tools/verify-web-interaction.py` | ✅ 对话框开/关、遮罩铺满、滚动锁定与恢复、分段控件切换与 aria 同步 |
 | Web 玻璃融合 | 真实浏览器，检查子元素滤镜前缀 | ✅ 组内子元素全部使用 `lg-fused-` 融合滤镜（smoothing=8 与 40 两组） |
 | Android 真机运行 | Xiaomi 13 · Android 16 / API 36 | ✅ 安装、启动、进程存活、无致命异常；边缘折射在真机可见 |
+| Compose 组件测试 | `./gradlew desktopTest` | ✅ 25 个用例（含 `commonTest` 共享的移动端组件测试） |
 
 截图见 `docs/screenshots/`。
 

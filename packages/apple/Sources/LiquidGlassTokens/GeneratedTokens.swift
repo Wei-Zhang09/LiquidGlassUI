@@ -32,7 +32,9 @@ public enum GlassColorTokens {
         highlight: GlassColor(red: 1.0000, green: 1.0000, blue: 1.0000, alpha: 0.5000),
         shadow: GlassColor(red: 0.1300, green: 0.1900, blue: 0.2400, alpha: 0.1800),
         innerShadow: GlassColor(red: 0.4000, green: 0.5000, blue: 0.5900, alpha: 0.1000),
-        surface: GlassColor(red: 1.0000, green: 1.0000, blue: 1.0000, alpha: 0.4400)
+        surface: GlassColor(red: 1.0000, green: 1.0000, blue: 1.0000, alpha: 0.4400),
+        overlay: GlassColor(red: 0.0700, green: 0.1000, blue: 0.1400, alpha: 0.5500),
+        surfaceModal: GlassColor(red: 1.0000, green: 1.0000, blue: 1.0000, alpha: 0.8200)
     )
 
     public static let dark = GlassColors(
@@ -41,7 +43,9 @@ public enum GlassColorTokens {
         highlight: GlassColor(red: 1.0000, green: 1.0000, blue: 1.0000, alpha: 0.3800),
         shadow: GlassColor(red: 0.0000, green: 0.0000, blue: 0.0000, alpha: 0.4500),
         innerShadow: GlassColor(red: 0.0000, green: 0.0000, blue: 0.0000, alpha: 0.2200),
-        surface: GlassColor(red: 1.0000, green: 1.0000, blue: 1.0000, alpha: 0.1000)
+        surface: GlassColor(red: 1.0000, green: 1.0000, blue: 1.0000, alpha: 0.1000),
+        overlay: GlassColor(red: 0.0000, green: 0.0000, blue: 0.0000, alpha: 0.6800),
+        surfaceModal: GlassColor(red: 0.1200, green: 0.1500, blue: 0.2000, alpha: 0.8600)
     )
 }
 

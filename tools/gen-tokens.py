@@ -109,6 +109,8 @@ def gen_kt(t: dict) -> str:
         shadow = {kcolor(c['shadow'])},
         innerShadow = {kcolor(c['innerShadow'])},
         surface = {kcolor(c['surface'])},
+        overlay = {kcolor(c['overlay'])},
+        surfaceModal = {kcolor(c['surfaceModal'])},
     )"""
 
     return f"""// {HEADER}
@@ -127,6 +129,8 @@ data class GlassColors(
     val shadow: Color,
     val innerShadow: Color,
     val surface: Color,
+    val overlay: Color,
+    val surfaceModal: Color,
 )
 
 object GlassColorTokens {{
@@ -196,7 +200,9 @@ def gen_swift(t: dict) -> str:
         highlight: {scolor(c['highlight'])},
         shadow: {scolor(c['shadow'])},
         innerShadow: {scolor(c['innerShadow'])},
-        surface: {scolor(c['surface'])}
+        surface: {scolor(c['surface'])},
+        overlay: {scolor(c['overlay'])},
+        surfaceModal: {scolor(c['surfaceModal'])}
     )"""
 
     return f"""// {HEADER}

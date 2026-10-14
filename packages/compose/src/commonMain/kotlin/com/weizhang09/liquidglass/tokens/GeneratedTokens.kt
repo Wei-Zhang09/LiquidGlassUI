@@ -14,6 +14,8 @@ data class GlassColors(
     val shadow: Color,
     val innerShadow: Color,
     val surface: Color,
+    val overlay: Color,
+    val surfaceModal: Color,
 )
 
 object GlassColorTokens {
@@ -24,6 +26,8 @@ object GlassColorTokens {
         shadow = Color(0.1300f, 0.1900f, 0.2400f, 0.1800f),
         innerShadow = Color(0.4000f, 0.5000f, 0.5900f, 0.1000f),
         surface = Color(1.0000f, 1.0000f, 1.0000f, 0.4400f),
+        overlay = Color(0.0700f, 0.1000f, 0.1400f, 0.5500f),
+        surfaceModal = Color(1.0000f, 1.0000f, 1.0000f, 0.8200f),
     )
 
     val Dark = GlassColors(
@@ -33,6 +37,8 @@ object GlassColorTokens {
         shadow = Color(0.0000f, 0.0000f, 0.0000f, 0.4500f),
         innerShadow = Color(0.0000f, 0.0000f, 0.0000f, 0.2200f),
         surface = Color(1.0000f, 1.0000f, 1.0000f, 0.1000f),
+        overlay = Color(0.0000f, 0.0000f, 0.0000f, 0.6800f),
+        surfaceModal = Color(0.1200f, 0.1500f, 0.2000f, 0.8600f),
     )
 }
 
