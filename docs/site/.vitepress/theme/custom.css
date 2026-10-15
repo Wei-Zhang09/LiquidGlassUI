@@ -508,6 +508,10 @@ html.dark .VPNav .DocSearch-Button:hover {
    反而压住 hero）。导航高度保持 52px，占位改由下方给内容区加 margin 实现。 */
 :root {
   --vp-nav-height: 52px;
+  /* ⚠️ 侧栏实际宽度是 328px（见 .VPSidebar 的 width），
+     VitePress 用这个变量算正文区偏移。不改的话正文会和变宽的侧栏重叠。
+     这里给 340 = 328 + 12（左侧 margin）。 */
+  --vp-sidebar-width: 340px;
 }
 
 /* ============================================================
@@ -524,13 +528,20 @@ html.dark .VPNav .DocSearch-Button:hover {
   border-radius: var(--doc-radius-lg) !important;
   box-shadow: var(--doc-glass-shadow), var(--doc-glass-inset-highlight) !important;
   padding-top: 82px !important;
-  /* 浮动面板：左右留出间距，与导航胶囊的浮动语言一致 */
+  /* 浮动面板：左右留出间距，与导航胶囊的浮动语言一致。
+     ⚠️ 宽度必须给足：内容可用宽 = 宽度 − 左右 padding(32×2)。
+     实测教训：原来 260px → 可用 196px，最长条目「GlassBottomBar 底部标签栏」
+     需要 181px，只差 15px 余量。**不同中文字体字宽不同**（微软雅黑 / PingFang /
+     SimSun 差异可达 10%+），在用户环境就溢出被裁成「快速开」「设计原」「降级策」。
+     压力测试（字号 +20% / 宽字体 / 字距 +0.5）显示 296px 仍只有 0.5px 余量，
+     因此放宽到 328px（可用 276px）—— 最长条目 181px，余量约 95px。 */
   margin: 0 0 16px 12px !important;
-  width: calc(var(--vp-sidebar-width) - 12px) !important;
+  width: 328px !important;
   top: 0 !important;
   bottom: 16px !important;
   height: auto !important;
   overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .VPSidebar .curtain {
@@ -540,6 +551,11 @@ html.dark .VPNav .DocSearch-Button:hover {
 .VPSidebarItem .text {
   font-size: 14px;
   color: var(--ds-text-muted);
+  /* 兜底：万一条目仍超出（字体差异、后续新增更长条目），
+     显示省略号而不是硬裁 —— 硬裁会让人以为文字就是那样。 */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .VPSidebarItem.level-0 > .item > .text {
