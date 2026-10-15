@@ -10,6 +10,8 @@ import { defineConfig } from 'vitepress'
  *
  * 演示直接用 Web Components 标签，无需 Vue 封装 —— 组件本身框架无关。
  */
+const BASE = process.env.DOCS_BASE || '/'
+
 export default defineConfig({
   lang: 'zh-CN',
   title: 'LiquidGlassUI',
@@ -24,7 +26,7 @@ export default defineConfig({
    *  - 本地 `npm run dev` / `npm run build`：base = '/'（默认）
    *  - CI 部署：设 `DOCS_BASE=/LiquidGlassUI/`
    */
-  base: process.env.DOCS_BASE || '/',
+  base: BASE,
 
   /**
    * 图标：用户提供的玻璃质感渐变花瓣。
@@ -32,11 +34,17 @@ export default defineConfig({
    *  - favicon*.png 简化版（提饱和/提对比/去噪/锐化），小尺寸更清晰
    * 详见 tools 里的生成脚本与 docs/screenshots 的对比图。
    */
+  /**
+   * ⚠️ head 里的 href **不会自动加 base 前缀**（themeConfig.logo 会）。
+   * 站点部署在子路径 /LiquidGlassUI/ 下，写死 `/favicon.svg` 会解析成
+   * `https://wei-zhang09.github.io/favicon.svg`（根域名，404）。
+   * 实测踩过。所以这里显式拼上 `base`。
+   */
   head: [
-    ['link', { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' }],
-    ['link', { rel: 'icon', type: 'image/png', sizes: '32x32', href: '/favicon.png' }],
-    ['link', { rel: 'icon', type: 'image/png', sizes: '16x16', href: '/favicon-16.png' }],
-    ['link', { rel: 'apple-touch-icon', sizes: '180x180', href: '/apple-touch-icon.png' }],
+    ['link', { rel: 'icon', type: 'image/svg+xml', href: `${BASE}favicon.svg` }],
+    ['link', { rel: 'icon', type: 'image/png', sizes: '32x32', href: `${BASE}favicon.png` }],
+    ['link', { rel: 'icon', type: 'image/png', sizes: '16x16', href: `${BASE}favicon-16.png` }],
+    ['link', { rel: 'apple-touch-icon', sizes: '180x180', href: `${BASE}apple-touch-icon.png` }],
   ],
 
   themeConfig: {
