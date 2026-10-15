@@ -52,72 +52,42 @@
    ============================================================ */
 
 /**
- * ⚠️ 色彩饱和度是**刻意调高**的（参照图二）。
+ * 背景：**DeepSeek 式简约**。
  *
- * 实测教训：玻璃填充降到 0.24–0.30 后，视觉复核仍说「背景色透不出来」——
- * 因为**背景本身不够饱和**。低填充玻璃只是「让背景透过来」，
- * 透过来的若是一片淡色，就等于什么都没透。
+ * 用户反馈「不要这么多的网格啥的」——已移除全站网格纹理，
+ * 改为几团柔和的冷色光斑 + 极淡底色，接近 DeepSeek 官网的干净观感。
  *
- * 图二的背景是高饱和色块。这里把浓度提到同级别，但保持冷色单色系
- * （蓝 → 紫，不用图二的红/绿/黄，避免破坏站点调性）。
- *
- * 三处必须同时成立：
- *  1. 背景有**高饱和色彩**（否则低填充玻璃无内容可透）
- *  2. 网格穿过玻璃区域（模糊后能看出纹理被抹平）
- *  3. 填充足够低（0.24–0.30）让色彩真的透上来
+ * ⚠️ 但仍**保留可辨识的色彩浓度**：玻璃面板是「让背景透过来」的，
+ * 若背景近乎纯色，低填充玻璃就等于什么都没透（这条实测教训不变）。
+ * 所以不是纯白，而是「低对比、有色相」。
  */
 html {
-  background-color: #7fa6e0;
+  background-color: #f5f8fc;
   background-image:
-    /* 顶部横带：正对导航（y=14..70），高饱和蓝 → 紫 */
-    radial-gradient(ellipse 46rem 15rem at 24% 2%, rgba(56, 116, 246, 1) 0%, transparent 60%),
-    radial-gradient(ellipse 44rem 14rem at 60% 1%, rgba(132, 88, 250, 1) 0%, transparent 58%),
-    radial-gradient(ellipse 32rem 13rem at 88% 3%, rgba(190, 100, 246, 0.95) 0%, transparent 56%),
-    /* hero 区 */
-    radial-gradient(ellipse 50rem 24rem at 16% 17%, rgba(90, 150, 246, 0.88) 0%, transparent 60%),
-    radial-gradient(ellipse 48rem 24rem at 86% 19%, rgba(148, 120, 250, 0.80) 0%, transparent 58%),
-    /* 卡片带（38%..66%）—— 必须仍有色彩，否则卡片只能透出白色 */
-    radial-gradient(ellipse 44rem 22rem at 22% 48%, rgba(104, 160, 248, 0.78) 0%, transparent 60%),
-    radial-gradient(ellipse 44rem 22rem at 78% 54%, rgba(156, 128, 250, 0.72) 0%, transparent 58%),
-    /* 底部淡出 */
-    linear-gradient(178deg, #86abe4 0%, #9fbeec 18%, #bcd2f2 38%, #d3e0f6 58%, #e8effa 80%, #f5f8fd 100%);
+    /* 三团柔光：左上蓝、右上紫、右中粉紫 —— 位置对应内容区，不做横向色带 */
+    radial-gradient(ellipse 62rem 36rem at 12% 4%, rgba(96, 150, 245, 0.34) 0%, transparent 62%),
+    radial-gradient(ellipse 56rem 34rem at 90% 2%, rgba(152, 118, 250, 0.28) 0%, transparent 60%),
+    radial-gradient(ellipse 52rem 32rem at 84% 56%, rgba(178, 128, 246, 0.15) 0%, transparent 62%),
+    linear-gradient(178deg, #eef3fb 0%, #f4f7fd 45%, #fbfcfe 100%);
   background-attachment: fixed;
 }
 
-/* 网格：**顶部不淡出**（导航就压在 y=14..70，网格必须穿过它），越往下越淡 */
-html::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 0;
-  background-image:
-    linear-gradient(rgba(58, 92, 156, 0.34) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(58, 92, 156, 0.34) 1px, transparent 1px);
-  background-size: 40px 40px;
-  -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 30%, rgba(0, 0, 0, 0.42) 58%, transparent 86%);
-  mask-image: linear-gradient(180deg, #000 0%, #000 30%, rgba(0, 0, 0, 0.42) 58%, transparent 86%);
-}
+/* 全站网格纹理：**已按用户要求移除**（「不要这么多的网格啥的」）。
+   曾经用 40px 网格穿过导航区来展示玻璃的模糊能力，但整页观感太「工程图」，
+   与 DeepSeek 那种干净背景不符。玻璃的展示改由**演示区**承担
+   （演示区仍有高对比测试图，模糊一个近乎纯色的背景等于什么都没做）。 */
 
 /* 暗色：同样高饱和，否则玻璃在暗色下也透不出颜色 */
 html.dark {
-  background-color: #050a14;
+  background-color: #070c16;
   background-image:
-    radial-gradient(ellipse 46rem 15rem at 24% 2%, rgba(36, 84, 210, 1) 0%, transparent 60%),
-    radial-gradient(ellipse 44rem 14rem at 60% 1%, rgba(88, 44, 196, 1) 0%, transparent 58%),
-    radial-gradient(ellipse 32rem 13rem at 88% 3%, rgba(136, 40, 190, 0.95) 0%, transparent 56%),
-    radial-gradient(ellipse 50rem 24rem at 16% 17%, rgba(26, 70, 160, 0.90) 0%, transparent 60%),
-    radial-gradient(ellipse 48rem 24rem at 86% 19%, rgba(74, 40, 156, 0.82) 0%, transparent 58%),
-    radial-gradient(ellipse 44rem 22rem at 22% 48%, rgba(22, 62, 140, 0.78) 0%, transparent 60%),
-    radial-gradient(ellipse 44rem 22rem at 78% 54%, rgba(68, 36, 140, 0.72) 0%, transparent 58%),
-    linear-gradient(178deg, #071228 0%, #061020 30%, #050c18 60%, #03070f 100%);
+    radial-gradient(ellipse 62rem 36rem at 12% 4%, rgba(38, 88, 214, 0.42) 0%, transparent 62%),
+    radial-gradient(ellipse 56rem 34rem at 90% 2%, rgba(94, 48, 204, 0.36) 0%, transparent 60%),
+    radial-gradient(ellipse 52rem 32rem at 84% 56%, rgba(120, 44, 168, 0.18) 0%, transparent 62%),
+    linear-gradient(178deg, #0a1224 0%, #070d18 45%, #04070e 100%);
 }
 
-html.dark::before {
-  background-image:
-    linear-gradient(rgba(110, 155, 235, 0.30) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(110, 155, 235, 0.30) 1px, transparent 1px);
-}
+/* 暗色网格同样移除（见上）。 */
 
 /* ============================================================
    3. 主题变量
@@ -370,6 +340,82 @@ html.dark {
   z-index: 1;
 }
 
+/* ============================================================
+   5.1 导航滚动状态（DeepSeek 官网的两段式）
+   ============================================================
+
+   用户参照 DeepSeek 官网要求「往下滑动后状态切换」。
+
+   ⚠️ 好消息：**不需要 JS**。VitePress 内置了滚动检测 ——
+   页面在顶部时 `.VPNavBar` 带 `top` 类，滚动后该类被移除
+   （实测 scrollY=0 → `VPNavBar has-sidebar top`，
+        scrollY=400 → `VPNavBar has-sidebar`）。
+   所以两段状态直接用 `.top` / `:not(.top)` 区分即可。
+
+   两段差异（参照 DeepSeek 实测）：
+     顶部：几乎透明，只留最淡的边缘，让内容「浮」在背景上
+     滚动后：玻璃变实（0.62）、发丝边框 + 柔和投影，与下方内容分层
+   ============================================================ */
+
+.VPNav .VPNavBar {
+  transition:
+    background 0.34s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.34s cubic-bezier(0.4, 0, 0.2, 1),
+    border-color 0.34s cubic-bezier(0.4, 0, 0.2, 1),
+    backdrop-filter 0.34s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* —— 顶部：极淡，几乎只剩一层雾 —— */
+.VPNav .VPNavBar.top {
+  background: rgba(255, 255, 255, 0.14) !important;
+  border-color: rgba(255, 255, 255, 0.30) !important;
+  border-bottom-color: rgba(255, 255, 255, 0.16) !important;
+  box-shadow:
+    0 2px 10px rgba(33, 49, 62, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.45) !important;
+}
+
+.VPNav .VPNavBar.top::before {
+  opacity: 0.45;
+}
+
+/* —— 滚动后：玻璃变实 + 边框 + 投影（与下方内容分层）—— */
+.VPNav .VPNavBar:not(.top) {
+  background: rgba(255, 255, 255, 0.66) !important;
+  backdrop-filter: blur(24px) saturate(185%) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(185%) !important;
+  border-color: rgba(255, 255, 255, 0.72) !important;
+  border-bottom-color: rgba(255, 255, 255, 0.42) !important;
+  box-shadow:
+    0 14px 40px rgba(33, 49, 62, 0.14),
+    0 2px 6px rgba(33, 49, 62, 0.06),
+    inset 0 1.5px 0 rgba(255, 255, 255, 0.85),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.28) !important;
+}
+
+.VPNav .VPNavBar:not(.top)::before {
+  opacity: 0.75;
+}
+
+/* 暗色：同一套逻辑，换令牌值 */
+html.dark .VPNav .VPNavBar.top {
+  background: rgba(12, 18, 32, 0.20) !important;
+  border-color: rgba(255, 255, 255, 0.10) !important;
+  box-shadow:
+    0 2px 10px rgba(0, 0, 0, 0.20),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12) !important;
+}
+
+html.dark .VPNav .VPNavBar:not(.top) {
+  background: rgba(12, 18, 32, 0.72) !important;
+  border-color: rgba(255, 255, 255, 0.16) !important;
+  border-bottom-color: rgba(255, 255, 255, 0.06) !important;
+  box-shadow:
+    0 14px 44px rgba(0, 0, 0, 0.55),
+    0 2px 6px rgba(0, 0, 0, 0.30),
+    inset 0 1.5px 0 rgba(255, 255, 255, 0.22) !important;
+}
+
 /* 暗色导航：不再写死填充，用令牌（否则覆盖主规则，令牌形同虚设）。 */
 html.dark .VPNav .VPNavBar {
   border-color: rgba(255, 255, 255, 0.16) !important;
@@ -415,6 +461,45 @@ html.dark .VPNav .VPNavBar::before {
   padding: 0 10px 0 20px !important;
 }
 
+/**
+ * ⚠️ 品牌文字与搜索框重叠 —— 用户截图里「LiquidGlass」和「Search」叠在一起。
+ *
+ * 根因：VitePress 把 `.title` 设成 `position: absolute`（脱离文档流，
+ * 宽度算成 0），于是 `.content`（含搜索框）从容器左边缘就开始排，
+ * 直接压到品牌文字上。实测 1440px：
+ *   品牌文字 x=393..497，搜索按钮 x=445..598 → **重叠 52px**。
+ *
+ * 修法：把标题恢复成 flex 项（static + 不收缩），让它真正占位，
+ * 搜索框自然被推到右边。
+ */
+.VPNav .VPNavBar .container {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+}
+
+.VPNav .VPNavBar .title,
+.VPNav .VPNavBar .VPNavBarTitle {
+  position: static !important;
+  flex: 0 0 auto !important;
+  white-space: nowrap !important;
+  /* ⚠️⚠️ 必须归零 width —— 这是重叠的**真正根因**。
+     VitePress 的 VPNavBarTitle.vue 里内层 `<a class="title">` 带
+     `width: 100%`，而它的父级 `.VPNavBarTitle` 宽度又是 auto
+     → **循环依赖，浏览器解析为 0**。
+     结果整条标题链宽度塌成 0，搜索框（同为容器 flex 项）直接压上来。
+     实测：`.title` w=0、`img.logo` w=0（但 h=26px，说明高度约束生效了）、
+     文字 span 却从 x=421 溢出到 525 → 与搜索框（左 457）重叠 68px。 */
+  width: auto !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+.VPNav .VPNavBar .content {
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+}
+
 .VPNav .VPNavBar .title,
 .VPNav .VPNavBar .VPNavBarTitle {
   padding: 0 !important;
@@ -427,6 +512,26 @@ html.dark .VPNav .VPNavBar::before {
   font-size: 16px;
   color: var(--ds-text);
   letter-spacing: -0.01em;
+}
+
+/**
+ * Logo：原图是 512×512 方形图标，默认会被 VitePress 按原尺寸渲染，
+ * 把 56px 高的导航撑变形。这里锁定高度，宽度自适应。
+ */
+.VPNav .VPNavBar img.logo,
+.VPNav .VPNavBar .VPImage.logo {
+  height: 26px !important;
+  width: 26px !important;
+  border-radius: 7px !important;
+  margin-right: 8px !important;
+  /* 图标自带浅蓝底，压在玻璃上会有方形硬边 —— 加一点内阴影让它融进胶囊 */
+  box-shadow: 0 1px 3px rgba(33, 49, 62, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+/* 标题区排成一行（logo + 文字），并与搜索框留出间距 */
+.VPNav .VPNavBar .VPNavBarTitle .title {
+  display: flex !important;
+  align-items: center !important;
 }
 
 html.dark .VPNav .VPNavBar .VPNavBarTitle .title {
@@ -462,6 +567,14 @@ html.dark .VPNav .VPNavBar .VPNavBarTitle .title {
 html.dark .VPNav .VPNavBarMenuLink:hover {
   background: rgba(255, 255, 255, 0.10) !important;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.10);
+}
+
+/**
+ * 首页顶部导航栏**不要搜索框**（用户明确要求）。
+ * VitePress 给首页导航加了 `.home` 类，据此隐藏。
+ */
+.VPNavBar.home .VPNavBarSearch {
+  display: none !important;
 }
 
 /* 搜索框：玻璃小胶囊 */
@@ -1030,7 +1143,12 @@ html.dark .vp-doc .custom-block {
    负边距会把 hero 拉回胶囊下面（实测标题被压到 y=24）。归零。 */
 .VPHome .VPHero {
   margin-top: 0 !important;
-  padding: 8px 24px 40px !important;
+  /* ⚠️ 顶部 padding 必须让开**浮动导航胶囊**（底 y=70）。
+     原来 8px → hero 标题从 y=40 起，被导航压住 30px
+     （实测：导航底 70、hero .name 顶 40 → 间距 -30px，标题被遮）。
+     改为 46px → 标题从 y≈102 起，与导航底保持 32px 呼吸，
+     和文档页正文卡片顶（也是 102）对齐，全站同一水平线。 */
+  padding: 70px 24px 40px !important;
 }
 
 .VPHome {

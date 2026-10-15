@@ -26,8 +26,21 @@ export default defineConfig({
    */
   base: process.env.DOCS_BASE || '/',
 
+  /**
+   * 图标：用户提供的玻璃质感渐变花瓣。
+   *  - logo.png     原图细节（导航栏 28px、首页 hero）
+   *  - favicon*.png 简化版（提饱和/提对比/去噪/锐化），小尺寸更清晰
+   * 详见 tools 里的生成脚本与 docs/screenshots 的对比图。
+   */
+  head: [
+    ['link', { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' }],
+    ['link', { rel: 'icon', type: 'image/png', sizes: '32x32', href: '/favicon.png' }],
+    ['link', { rel: 'icon', type: 'image/png', sizes: '16x16', href: '/favicon-16.png' }],
+    ['link', { rel: 'apple-touch-icon', sizes: '180x180', href: '/apple-touch-icon.png' }],
+  ],
+
   themeConfig: {
-    logo: undefined,
+    logo: '/logo.png',
 
     nav: [
       { text: '指南', link: '/guide/' },
