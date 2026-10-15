@@ -32,7 +32,9 @@ print("已存 logo.png 512x512")
 
 # 3) favicon 简化版：小尺寸下要更"实"
 def simplify(img, sat=1.45, con=1.18, sharp_pct=60):
-    x = img.filter(ImageFilter.MedianFilter(1))      # 去极细高光噪点
+    # ⚠️ MedianFilter(1) 会让 PIL 原生崩溃（进程直接消失，rc=127，无 Python 异常）。
+    # 实测 size=1 崩、3/5/7/9/11/15 都正常 —— 用 3。
+    x = img.filter(ImageFilter.MedianFilter(3))      # 去极细高光噪点
     x = ImageEnhance.Color(x).enhance(sat)           # 提饱和
     a = x.split()[-1]
     rgb = ImageEnhance.Contrast(x.convert("RGB")).enhance(con)  # 提对比（只作用 RGB）
