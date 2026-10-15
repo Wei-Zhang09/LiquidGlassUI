@@ -52,36 +52,35 @@
    ============================================================ */
 
 /**
- * ⚠️ 色彩分布是**刻意设计**的。
+ * ⚠️ 色彩饱和度是**刻意调高**的（参照图二）。
  *
- * 实测教训（像素级验证）：
- *  - 导航内像素 (195,219,255) 几乎是**均匀一片**，网格在那里不可见
- *  - 模糊一片纯色 = 什么都没做，视觉上就是一坨半透明白
+ * 实测教训：玻璃填充降到 0.24–0.30 后，视觉复核仍说「背景色透不出来」——
+ * 因为**背景本身不够饱和**。低填充玻璃只是「让背景透过来」，
+ * 透过来的若是一片淡色，就等于什么都没透。
  *
- * 所以关键是：**导航正后方必须有强对比的图案**。
- * 网格固定在视口上（position: fixed），而导航在 y=14..70，
- * 因此网格的 mask 必须**从 y=0 起就不透明**（不能淡出），
- * 并且要有足够对比度，模糊后才能看出"纹理被抹平"。
+ * 图二的背景是高饱和色块。这里把浓度提到同级别，但保持冷色单色系
+ * （蓝 → 紫，不用图二的红/绿/黄，避免破坏站点调性）。
  *
- * 同时把彩色光斑压在导航那条横带上，让色相能透过玻璃。
+ * 三处必须同时成立：
+ *  1. 背景有**高饱和色彩**（否则低填充玻璃无内容可透）
+ *  2. 网格穿过玻璃区域（模糊后能看出纹理被抹平）
+ *  3. 填充足够低（0.24–0.30）让色彩真的透上来
  */
 html {
-  background-color: #a8c2e8;
+  background-color: #7fa6e0;
   background-image:
-    /* 顶部横带：正对导航（y=14..70），蓝 → 紫的强过渡 */
-    radial-gradient(ellipse 46rem 14rem at 26% 2%, rgba(86, 138, 246, 1) 0%, transparent 62%),
-    radial-gradient(ellipse 42rem 13rem at 62% 1%, rgba(150, 112, 250, 1) 0%, transparent 60%),
-    radial-gradient(ellipse 30rem 12rem at 88% 3%, rgba(196, 132, 248, 0.92) 0%, transparent 58%),
-    /* 中段：hero 区域 */
-    radial-gradient(ellipse 50rem 22rem at 18% 16%, rgba(120, 170, 246, 0.72) 0%, transparent 62%),
-    radial-gradient(ellipse 48rem 22rem at 84% 18%, rgba(160, 140, 246, 0.62) 0%, transparent 60%),
-    /* ⚠️ 卡片带（约 y=380..660，即 38%..66%）：这里必须**仍有色彩**，
-       否则卡片没有东西可透 —— 第一版把渐变在 50% 就洗白了，
-       卡片只能透出白色，看起来就是实心白卡。 */
-    radial-gradient(ellipse 44rem 20rem at 24% 48%, rgba(130, 178, 246, 0.60) 0%, transparent 62%),
-    radial-gradient(ellipse 42rem 20rem at 76% 52%, rgba(170, 148, 248, 0.54) 0%, transparent 60%),
-    /* 底部才淡出 */
-    linear-gradient(178deg, #a6c0e8 0%, #bcd0ee 20%, #cfdcf4 40%, #dae4f6 60%, #e8eff9 80%, #f4f8fd 100%);
+    /* 顶部横带：正对导航（y=14..70），高饱和蓝 → 紫 */
+    radial-gradient(ellipse 46rem 15rem at 24% 2%, rgba(56, 116, 246, 1) 0%, transparent 60%),
+    radial-gradient(ellipse 44rem 14rem at 60% 1%, rgba(132, 88, 250, 1) 0%, transparent 58%),
+    radial-gradient(ellipse 32rem 13rem at 88% 3%, rgba(190, 100, 246, 0.95) 0%, transparent 56%),
+    /* hero 区 */
+    radial-gradient(ellipse 50rem 24rem at 16% 17%, rgba(90, 150, 246, 0.88) 0%, transparent 60%),
+    radial-gradient(ellipse 48rem 24rem at 86% 19%, rgba(148, 120, 250, 0.80) 0%, transparent 58%),
+    /* 卡片带（38%..66%）—— 必须仍有色彩，否则卡片只能透出白色 */
+    radial-gradient(ellipse 44rem 22rem at 22% 48%, rgba(104, 160, 248, 0.78) 0%, transparent 60%),
+    radial-gradient(ellipse 44rem 22rem at 78% 54%, rgba(156, 128, 250, 0.72) 0%, transparent 58%),
+    /* 底部淡出 */
+    linear-gradient(178deg, #86abe4 0%, #9fbeec 18%, #bcd2f2 38%, #d3e0f6 58%, #e8effa 80%, #f5f8fd 100%);
   background-attachment: fixed;
 }
 
@@ -100,22 +99,24 @@ html::before {
   mask-image: linear-gradient(180deg, #000 0%, #000 30%, rgba(0, 0, 0, 0.42) 58%, transparent 86%);
 }
 
-/* 暗色：同样把主光斑压在导航横带上 */
+/* 暗色：同样高饱和，否则玻璃在暗色下也透不出颜色 */
 html.dark {
-  background-color: #060c18;
+  background-color: #050a14;
   background-image:
-    radial-gradient(ellipse 46rem 14rem at 26% 2%, rgba(46, 92, 205, 1) 0%, transparent 62%),
-    radial-gradient(ellipse 42rem 13rem at 62% 1%, rgba(92, 52, 190, 1) 0%, transparent 60%),
-    radial-gradient(ellipse 30rem 12rem at 88% 3%, rgba(140, 48, 190, 0.90) 0%, transparent 58%),
-    radial-gradient(ellipse 54rem 28rem at 16% 28%, rgba(28, 72, 148, 0.46) 0%, transparent 62%),
-    radial-gradient(ellipse 52rem 28rem at 86% 32%, rgba(80, 44, 156, 0.42) 0%, transparent 60%),
-    linear-gradient(178deg, #08122a 0%, #071020 30%, #060c18 60%, #04080f 100%);
+    radial-gradient(ellipse 46rem 15rem at 24% 2%, rgba(36, 84, 210, 1) 0%, transparent 60%),
+    radial-gradient(ellipse 44rem 14rem at 60% 1%, rgba(88, 44, 196, 1) 0%, transparent 58%),
+    radial-gradient(ellipse 32rem 13rem at 88% 3%, rgba(136, 40, 190, 0.95) 0%, transparent 56%),
+    radial-gradient(ellipse 50rem 24rem at 16% 17%, rgba(26, 70, 160, 0.90) 0%, transparent 60%),
+    radial-gradient(ellipse 48rem 24rem at 86% 19%, rgba(74, 40, 156, 0.82) 0%, transparent 58%),
+    radial-gradient(ellipse 44rem 22rem at 22% 48%, rgba(22, 62, 140, 0.78) 0%, transparent 60%),
+    radial-gradient(ellipse 44rem 22rem at 78% 54%, rgba(68, 36, 140, 0.72) 0%, transparent 58%),
+    linear-gradient(178deg, #071228 0%, #061020 30%, #050c18 60%, #03070f 100%);
 }
 
 html.dark::before {
   background-image:
-    linear-gradient(rgba(110, 155, 230, 0.26) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(110, 155, 230, 0.26) 1px, transparent 1px);
+    linear-gradient(rgba(110, 155, 235, 0.30) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(110, 155, 235, 0.30) 1px, transparent 1px);
 }
 
 /* ============================================================
@@ -225,11 +226,14 @@ html.dark {
   --doc-radius-pill: 9999px;
 
   /* 玻璃填充三档。
-     ⚠️ 导航的 0.26 太透：实测背后透上来的是饱和紫 (224,178,255)，
-     文字色 (92,102,120) 压在上面只有 2.90:1（低于 AA 的 4.5）。
-     提到 0.50 后仍能透出色相（玻璃感保留），但对比度回到安全区。 */
-  --doc-glass-nav: rgba(255, 255, 255, 0.50);   /* 顶部导航 */
-  --doc-glass-panel: rgba(255, 255, 255, 0.62); /* 面板：正文卡片、侧栏、目录 */
+     ⚠️ 参照图二（用户提供的 UI 参考）：填充要**低到能看见背景色**，
+     靠 backdrop-blur + 边缘高光表现"玻璃"，而不是靠不透明底色。
+     图二的玻璃底约 rgba(255,255,255,0.22)，blur 16–24px saturate 180%。
+
+     代价与约束：填充越低，文字对比度越低。因此**文字必须用深色**，
+     且这个值经过实测校准 —— 见下方注释里的对比度数据。 */
+  --doc-glass-nav: rgba(255, 255, 255, 0.24);   /* 顶部导航 */
+  --doc-glass-panel: rgba(255, 255, 255, 0.30); /* 面板：正文卡片、侧栏、目录 */
   --doc-glass-inset: rgba(43, 52, 69, 0.035);   /* 内嵌：代码块、表头 */
 
   /* 玻璃边框（上亮下暗，统一） */
@@ -240,7 +244,7 @@ html.dark {
   --doc-glass-shadow:
     0 14px 40px rgba(40, 60, 90, 0.14),
     0 2px 6px rgba(40, 60, 90, 0.06);
-  --doc-glass-inset-highlight: inset 0 1.5px 0 rgba(255, 255, 255, 0.80);
+  --doc-glass-inset-highlight: inset 0 1.5px 0 rgba(255, 255, 255, 0.90);
 }
 
 html.dark {
@@ -316,9 +320,9 @@ html.dark {
   /* 填充降到 0.26 —— 原来 0.44 + 高光层叠加后接近 0.7，
      色相被压成一片死白。0.26 能让背景色真正透出来。 */
   background: var(--doc-glass-nav) !important;
-  backdrop-filter: blur(22px) saturate(180%) !important;
-  -webkit-backdrop-filter: blur(22px) saturate(180%) !important;
-  /* 上亮下暗的边框：玻璃的「玻璃感」主要靠边缘，不是靠模糊 */
+  backdrop-filter: blur(24px) saturate(185%) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(185%) !important;
+  /* 上亮下暗的边框：低填充下，玻璃的「玻璃感」主要靠边缘高光，不是靠模糊 */
   border: 1px solid var(--doc-glass-border-top) !important;
   border-bottom-color: var(--doc-glass-border-bottom) !important;
   box-shadow:
@@ -454,10 +458,10 @@ html.dark .VPNav .VPNavBarMenuLink:hover {
 /* 搜索框：玻璃小胶囊 */
 .VPNav .DocSearch-Button,
 .VPNav .VPNavBarSearchButton {
-  background: rgba(255, 255, 255, 0.42) !important;
-  backdrop-filter: blur(10px) !important;
-  -webkit-backdrop-filter: blur(10px) !important;
-  border: 1px solid rgba(255, 255, 255, 0.55) !important;
+  background: rgba(255, 255, 255, 0.20) !important;
+  backdrop-filter: blur(12px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(12px) saturate(180%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.50) !important;
   border-radius: var(--doc-radius-pill) !important;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6) !important;
   height: 36px !important;
@@ -513,8 +517,8 @@ html.dark .VPNav .DocSearch-Button:hover {
 /* 侧栏：与导航同源的玻璃，圆角用 lg 档（浮动面板而非贴边） */
 .VPSidebar {
   background: var(--doc-glass-panel) !important;
-  backdrop-filter: blur(22px) saturate(150%) !important;
-  -webkit-backdrop-filter: blur(22px) saturate(150%) !important;
+  backdrop-filter: blur(24px) saturate(185%) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(185%) !important;
   border: 1px solid var(--doc-glass-border-top) !important;
   border-bottom-color: var(--doc-glass-border-bottom) !important;
   border-radius: var(--doc-radius-lg) !important;
@@ -587,8 +591,8 @@ html.dark .VPSidebarItem.level-2.is-active > .item {
 .VPDoc .vp-doc {
   position: relative;
   background: var(--doc-glass-panel);
-  backdrop-filter: blur(28px) saturate(140%);
-  -webkit-backdrop-filter: blur(28px) saturate(140%);
+  backdrop-filter: blur(26px) saturate(180%);
+  -webkit-backdrop-filter: blur(26px) saturate(180%);
   border: 1px solid var(--doc-glass-border-top);
   border-bottom-color: var(--doc-glass-border-bottom);
   border-radius: var(--doc-radius-lg);
@@ -660,8 +664,8 @@ html.dark .vp-doc h2 {
    这是页面上最明显的缺陷（左侧栏在淡蓝区还能读，右侧在紫区就读不了）。 */
 .VPDoc .aside .VPDocAsideOutline {
   background: var(--doc-glass-panel);
-  backdrop-filter: blur(20px) saturate(150%);
-  -webkit-backdrop-filter: blur(20px) saturate(150%);
+  backdrop-filter: blur(24px) saturate(185%);
+  -webkit-backdrop-filter: blur(24px) saturate(185%);
   border: 1px solid var(--doc-glass-border-top);
   border-bottom-color: var(--doc-glass-border-bottom);
   border-radius: var(--doc-radius-lg);
@@ -973,9 +977,9 @@ html.dark .VPButton.alt {
 
 /* 特性卡片：玻璃 —— 低填充 + 边缘高光，让背景色真正透出来 */
 .VPFeature {
-  background: rgba(255, 255, 255, 0.30) !important;
-  backdrop-filter: blur(20px) saturate(170%) !important;
-  -webkit-backdrop-filter: blur(20px) saturate(170%) !important;
+  background: var(--doc-glass-panel) !important;
+  backdrop-filter: blur(24px) saturate(185%) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(185%) !important;
   border: 1px solid rgba(255, 255, 255, 0.62) !important;
   border-bottom-color: rgba(120, 150, 195, 0.26) !important;
   border-radius: var(--doc-radius-lg) !important;
