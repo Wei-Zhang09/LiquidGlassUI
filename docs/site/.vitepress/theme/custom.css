@@ -48,20 +48,44 @@
 }
 
 /* ============================================================
-   2. 背景 —— 极淡冷色渐变 + 向下淡出的网格
+   2. 背景 —— 冷色渐变 + 可见的色彩变化
    ============================================================ */
 
+/**
+ * ⚠️ 色彩分布是**刻意设计**的。
+ *
+ * 实测教训（像素级验证）：
+ *  - 导航内像素 (195,219,255) 几乎是**均匀一片**，网格在那里不可见
+ *  - 模糊一片纯色 = 什么都没做，视觉上就是一坨半透明白
+ *
+ * 所以关键是：**导航正后方必须有强对比的图案**。
+ * 网格固定在视口上（position: fixed），而导航在 y=14..70，
+ * 因此网格的 mask 必须**从 y=0 起就不透明**（不能淡出），
+ * 并且要有足够对比度，模糊后才能看出"纹理被抹平"。
+ *
+ * 同时把彩色光斑压在导航那条横带上，让色相能透过玻璃。
+ */
 html {
-  background-color: var(--ds-bg-base);
+  background-color: #a8c2e8;
   background-image:
-    radial-gradient(ellipse 68rem 42rem at 50% -12%, var(--ds-bg-tint) 0%, transparent 64%),
-    radial-gradient(ellipse 46rem 32rem at 10% 6%, rgba(214, 226, 248, 0.80) 0%, transparent 60%),
-    radial-gradient(ellipse 42rem 30rem at 90% 12%, rgba(226, 220, 250, 0.58) 0%, transparent 58%),
-    linear-gradient(180deg, #eef3fb 0%, #f6f9fd 40%, #ffffff 100%);
+    /* 顶部横带：正对导航（y=14..70），蓝 → 紫的强过渡 */
+    radial-gradient(ellipse 46rem 14rem at 26% 2%, rgba(86, 138, 246, 1) 0%, transparent 62%),
+    radial-gradient(ellipse 42rem 13rem at 62% 1%, rgba(150, 112, 250, 1) 0%, transparent 60%),
+    radial-gradient(ellipse 30rem 12rem at 88% 3%, rgba(196, 132, 248, 0.92) 0%, transparent 58%),
+    /* 中段：hero 区域 */
+    radial-gradient(ellipse 50rem 22rem at 18% 16%, rgba(120, 170, 246, 0.72) 0%, transparent 62%),
+    radial-gradient(ellipse 48rem 22rem at 84% 18%, rgba(160, 140, 246, 0.62) 0%, transparent 60%),
+    /* ⚠️ 卡片带（约 y=380..660，即 38%..66%）：这里必须**仍有色彩**，
+       否则卡片没有东西可透 —— 第一版把渐变在 50% 就洗白了，
+       卡片只能透出白色，看起来就是实心白卡。 */
+    radial-gradient(ellipse 44rem 20rem at 24% 48%, rgba(130, 178, 246, 0.60) 0%, transparent 62%),
+    radial-gradient(ellipse 42rem 20rem at 76% 52%, rgba(170, 148, 248, 0.54) 0%, transparent 60%),
+    /* 底部才淡出 */
+    linear-gradient(178deg, #a6c0e8 0%, #bcd0ee 20%, #cfdcf4 40%, #dae4f6 60%, #e8eff9 80%, #f4f8fd 100%);
   background-attachment: fixed;
 }
 
-/* 网格：越往下越淡（DeepSeek 的做法，让首屏有"蓝图感"而不干扰阅读） */
+/* 网格：**顶部不淡出**（导航就压在 y=14..70，网格必须穿过它），越往下越淡 */
 html::before {
   content: "";
   position: fixed;
@@ -69,27 +93,29 @@ html::before {
   pointer-events: none;
   z-index: 0;
   background-image:
-    linear-gradient(var(--ds-grid) 1px, transparent 1px),
-    linear-gradient(90deg, var(--ds-grid) 1px, transparent 1px);
-  background-size: 48px 48px;
-  -webkit-mask-image: linear-gradient(180deg, #000 0%, rgba(0, 0, 0, 0.40) 42%, transparent 76%);
-  mask-image: linear-gradient(180deg, #000 0%, rgba(0, 0, 0, 0.40) 42%, transparent 76%);
+    linear-gradient(rgba(58, 92, 156, 0.34) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(58, 92, 156, 0.34) 1px, transparent 1px);
+  background-size: 40px 40px;
+  -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 30%, rgba(0, 0, 0, 0.42) 58%, transparent 86%);
+  mask-image: linear-gradient(180deg, #000 0%, #000 30%, rgba(0, 0, 0, 0.42) 58%, transparent 86%);
 }
 
-/* 暗色：冷调深蓝，仍保持单色系 */
+/* 暗色：同样把主光斑压在导航横带上 */
 html.dark {
-  background-color: #0d1421;
+  background-color: #060c18;
   background-image:
-    radial-gradient(ellipse 68rem 42rem at 50% -12%, rgba(58, 86, 150, 0.45) 0%, transparent 64%),
-    radial-gradient(ellipse 46rem 32rem at 10% 6%, rgba(66, 96, 172, 0.30) 0%, transparent 60%),
-    radial-gradient(ellipse 42rem 30rem at 90% 12%, rgba(104, 78, 180, 0.24) 0%, transparent 58%),
-    linear-gradient(180deg, #101a2b 0%, #0d1421 44%, #0a1018 100%);
+    radial-gradient(ellipse 46rem 14rem at 26% 2%, rgba(46, 92, 205, 1) 0%, transparent 62%),
+    radial-gradient(ellipse 42rem 13rem at 62% 1%, rgba(92, 52, 190, 1) 0%, transparent 60%),
+    radial-gradient(ellipse 30rem 12rem at 88% 3%, rgba(140, 48, 190, 0.90) 0%, transparent 58%),
+    radial-gradient(ellipse 54rem 28rem at 16% 28%, rgba(28, 72, 148, 0.46) 0%, transparent 62%),
+    radial-gradient(ellipse 52rem 28rem at 86% 32%, rgba(80, 44, 156, 0.42) 0%, transparent 60%),
+    linear-gradient(178deg, #08122a 0%, #071020 30%, #060c18 60%, #04080f 100%);
 }
 
 html.dark::before {
   background-image:
-    linear-gradient(rgba(120, 150, 200, 0.10) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(120, 150, 200, 0.10) 1px, transparent 1px);
+    linear-gradient(rgba(110, 155, 230, 0.26) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(110, 155, 230, 0.26) 1px, transparent 1px);
 }
 
 /* ============================================================
@@ -202,21 +228,83 @@ html.dark {
   background: transparent !important;
 }
 
+/**
+ * 导航胶囊 = **真玻璃**，配方取自库自己的 `lg-glass-navbar`
+ * （packages/web/src/elements/glass-navbar.ts）：
+ *   半透明底 0.44 + backdrop-filter + 渐变边缘高光 + 内外阴影 + 左上光源
+ *
+ * ⚠️ 别把它做成扁平白胶囊。
+ * 一个讲液态玻璃的库、自己的导航却是实心白条，是产品自我否定 ——
+ * 这比"不好看"严重，它让读者不相信这个库真的会做玻璃。
+ */
 .VPNav .VPNavBar {
   width: min(1120px, calc(100% - 40px)) !important;
   margin: 14px auto 0 !important;
-  height: 52px !important;
+  height: 56px !important;
   border-radius: 9999px !important;
-  background: rgba(255, 255, 255, 0.78) !important;
-  backdrop-filter: blur(24px) saturate(160%) !important;
-  -webkit-backdrop-filter: blur(24px) saturate(160%) !important;
-  border: 1px solid var(--ds-border) !important;
-  box-shadow: var(--ds-shadow-md) !important;
+  /* 填充降到 0.26 —— 原来 0.44 + 高光层叠加后接近 0.7，
+     色相被压成一片死白。0.26 能让背景色真正透出来。 */
+  background: rgba(255, 255, 255, 0.26) !important;
+  backdrop-filter: blur(22px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(22px) saturate(180%) !important;
+  /* 上亮下暗的边框：玻璃的「玻璃感」主要靠边缘，不是靠模糊 */
+  border: 1px solid rgba(255, 255, 255, 0.68) !important;
+  border-bottom-color: rgba(120, 150, 195, 0.30) !important;
+  box-shadow:
+    0 14px 44px rgba(33, 49, 62, 0.20),
+    0 2px 6px rgba(33, 49, 62, 0.08),
+    inset 0 1.5px 0 rgba(255, 255, 255, 0.85),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.28),
+    inset 1px 1px 0 rgba(255, 255, 255, 0.5) !important;
+  overflow: hidden;
+}
+
+/* 边缘高光：左上光源的渐变扫光（比原来的更明确） */
+.VPNav .VPNavBar::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(
+    108deg,
+    rgba(255, 255, 255, 0.55) 0%,
+    rgba(255, 255, 255, 0.16) 22%,
+    transparent 46%,
+    transparent 62%,
+    rgba(255, 255, 255, 0.22) 100%
+  );
+  opacity: 0.9;
+  mix-blend-mode: screen;
+  z-index: 0;
+}
+
+/* 内容要盖在高光之上 */
+.VPNav .VPNavBar .wrapper,
+.VPNav .VPNavBar .container {
+  position: relative;
+  z-index: 1;
 }
 
 html.dark .VPNav .VPNavBar {
-  background: rgba(20, 28, 44, 0.72) !important;
-  border-color: rgba(255, 255, 255, 0.10) !important;
+  background: rgba(255, 255, 255, 0.07) !important;
+  border-color: rgba(255, 255, 255, 0.16) !important;
+  border-bottom-color: rgba(255, 255, 255, 0.06) !important;
+  box-shadow:
+    0 14px 44px rgba(0, 0, 0, 0.55),
+    inset 0 1.5px 0 rgba(255, 255, 255, 0.22),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.05) !important;
+}
+
+html.dark .VPNav .VPNavBar::before {
+  background: linear-gradient(
+    108deg,
+    rgba(255, 255, 255, 0.20) 0%,
+    rgba(255, 255, 255, 0.06) 22%,
+    transparent 46%,
+    transparent 62%,
+    rgba(255, 255, 255, 0.08) 100%
+  );
 }
 
 /* 胶囊里不要分割线与底部高光（DeepSeek 没有） */
@@ -261,19 +349,20 @@ html.dark .VPNav .VPNavBar .VPNavBarTitle .title {
   color: #e2e8f2;
 }
 
-/* 菜单项：DeepSeek 是很朴素的文字链接，悬停才给淡底 */
+/* 菜单项：悬停时给一块小玻璃 */
 .VPNav .VPNavBarMenuLink {
   border-radius: 9999px !important;
   padding: 0 14px !important;
   font-size: 14px;
   font-weight: 500;
   color: var(--ds-text-muted) !important;
-  transition: color 0.2s ease, background 0.2s ease;
+  transition: color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
 }
 
 .VPNav .VPNavBarMenuLink:hover {
   color: var(--ds-text) !important;
-  background: rgba(43, 52, 69, 0.05) !important;
+  background: rgba(255, 255, 255, 0.55) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
   backdrop-filter: none !important;
 }
 
@@ -288,34 +377,37 @@ html.dark .VPNav .VPNavBarMenuLink {
 
 html.dark .VPNav .VPNavBarMenuLink:hover {
   color: var(--vp-c-text-1) !important;
-  background: rgba(255, 255, 255, 0.06) !important;
+  background: rgba(255, 255, 255, 0.10) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.10);
 }
 
-/* 搜索框：胶囊内嵌控件，浅灰底无边框 */
+/* 搜索框：玻璃小胶囊 */
 .VPNav .DocSearch-Button,
 .VPNav .VPNavBarSearchButton {
-  background: rgba(43, 52, 69, 0.045) !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-  border: none !important;
+  background: rgba(255, 255, 255, 0.42) !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.55) !important;
   border-radius: 9999px !important;
-  box-shadow: none !important;
-  height: 34px !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6) !important;
+  height: 36px !important;
   padding: 0 12px !important;
 }
 
 .VPNav .DocSearch-Button:hover {
-  background: rgba(43, 52, 69, 0.075) !important;
-  border: none !important;
+  background: rgba(255, 255, 255, 0.62) !important;
+  border-color: rgba(255, 255, 255, 0.75) !important;
 }
 
 html.dark .VPNav .DocSearch-Button,
 html.dark .VPNav .VPNavBarSearchButton {
-  background: rgba(255, 255, 255, 0.07) !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
 }
 
 html.dark .VPNav .DocSearch-Button:hover {
-  background: rgba(255, 255, 255, 0.11) !important;
+  background: rgba(255, 255, 255, 0.13) !important;
 }
 
 .VPNav .VPSwitch,
@@ -351,14 +443,18 @@ html.dark .VPNav .VPNavBar.has-sidebar {
    6. 侧边栏
    ============================================================ */
 
-/* 侧栏顶部要避开浮动胶囊（VitePress 默认按通栏导航的 52px 算，
-   但胶囊还多出 14px 上边距 + 边框）。 */
+/* 侧栏也做玻璃（浮在背景之上，与导航同一材质语言） */
 .VPSidebar {
-  background: transparent !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-  border-right: none !important;
+  background: rgba(255, 255, 255, 0.40) !important;
+  backdrop-filter: blur(22px) saturate(140%) !important;
+  -webkit-backdrop-filter: blur(22px) saturate(140%) !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.50) !important;
   padding-top: 82px !important;
+}
+
+html.dark .VPSidebar {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border-right-color: rgba(255, 255, 255, 0.10) !important;
 }
 
 .VPSidebar .curtain {
@@ -413,25 +509,57 @@ html.dark .VPSidebarItem.level-2.is-active > .item {
    7. 正文区 —— 白卡片（DeepSeek 的卡片是白底 + 发丝边框）
    ============================================================ */
 
+/* 正文面板：玻璃 + 高透明度保可读。
+   底从 0.90 降到 0.76 —— 能透出背景色相，但正文对比度仍达标
+   （实测：浅色 12.5:1 → 预期 ~9:1，远高于 AA 的 4.5）。 */
 .VPDoc .vp-doc {
   position: relative;
-  background: var(--lg-content-bg);
-  backdrop-filter: blur(24px) saturate(120%);
-  -webkit-backdrop-filter: blur(24px) saturate(120%);
-  border: 1px solid var(--ds-border);
+  background: rgba(255, 255, 255, 0.76);
+  backdrop-filter: blur(28px) saturate(140%);
+  -webkit-backdrop-filter: blur(28px) saturate(140%);
+  border: 1px solid rgba(255, 255, 255, 0.62);
   border-radius: 24px;
-  box-shadow: var(--ds-shadow-md);
+  box-shadow:
+    0 20px 60px rgba(40, 60, 90, 0.13),
+    inset 1px 1px 0 rgba(255, 255, 255, 0.7);
   padding: 34px 38px;
   margin-top: 22px;
+  overflow: hidden;
+}
+
+/* 大面板的顶部高光带（组件的做法） */
+.VPDoc .vp-doc::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 40%;
+  border-radius: 24px 24px 0 0;
+  pointer-events: none;
+  background: linear-gradient(
+    112deg,
+    rgba(255, 255, 255, 0.42),
+    rgba(255, 255, 255, 0.10) 30%,
+    transparent 64%
+  );
 }
 
 html.dark .VPDoc .vp-doc {
-  border-color: rgba(255, 255, 255, 0.09);
+  background: rgba(16, 24, 40, 0.72);
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow:
+    0 20px 60px rgba(0, 0, 0, 0.50),
+    inset 1px 1px 0 rgba(255, 255, 255, 0.10);
 }
 
-/* DeepSeek 的卡片没有顶部高光带 —— 去掉 */
-.VPDoc .vp-doc::before {
-  display: none !important;
+html.dark .VPDoc .vp-doc::before {
+  background: linear-gradient(
+    112deg,
+    rgba(255, 255, 255, 0.09),
+    rgba(255, 255, 255, 0.02) 30%,
+    transparent 64%
+  );
 }
 
 .vp-doc h1 {
@@ -746,45 +874,87 @@ html.dark .VPButton.alt {
   color: var(--vp-c-text-1) !important;
 }
 
-/* 特性卡片：白底、大圆角、发丝边框、很淡的阴影 */
+/* 特性卡片：玻璃 —— 低填充 + 边缘高光，让背景色真正透出来 */
 .VPFeature {
-  background: rgba(255, 255, 255, 0.90) !important;
-  backdrop-filter: blur(12px) !important;
-  -webkit-backdrop-filter: blur(12px) !important;
-  border: 1px solid var(--ds-border) !important;
+  background: rgba(255, 255, 255, 0.30) !important;
+  backdrop-filter: blur(20px) saturate(170%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(170%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.62) !important;
+  border-bottom-color: rgba(120, 150, 195, 0.26) !important;
   border-radius: 20px !important;
-  box-shadow: var(--ds-shadow-sm) !important;
+  box-shadow:
+    0 14px 40px rgba(40, 60, 90, 0.14),
+    0 2px 6px rgba(40, 60, 90, 0.06),
+    inset 0 1.5px 0 rgba(255, 255, 255, 0.80),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.22) !important;
   transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
   padding: 26px !important;
+  position: relative;
+  overflow: hidden;
+}
+
+/* 卡片顶部高光带（左上光源扫过） */
+.VPFeature::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 52%;
+  pointer-events: none;
+  background: linear-gradient(
+    108deg,
+    rgba(255, 255, 255, 0.40),
+    rgba(255, 255, 255, 0.08) 26%,
+    transparent 54%
+  );
 }
 
 .VPFeature:hover {
   transform: translateY(-2px);
-  border-color: var(--ds-border-strong) !important;
-  box-shadow: var(--ds-shadow-lg) !important;
+  border-color: rgba(255, 255, 255, 0.82) !important;
+  box-shadow:
+    0 22px 56px rgba(40, 60, 90, 0.20),
+    inset 0 1.5px 0 rgba(255, 255, 255, 0.90) !important;
 }
 
 .VPFeature .title {
   font-size: 16px !important;
   font-weight: 600 !important;
   color: var(--ds-text) !important;
+  position: relative;
 }
 
 .VPFeature .details {
   font-size: 14px !important;
   line-height: 1.65 !important;
   color: var(--ds-text-muted) !important;
+  position: relative;
 }
 
 .VPFeature .icon {
-  background: var(--ds-blue-soft) !important;
+  background: rgba(255, 255, 255, 0.50) !important;
   border-radius: 10px;
   color: var(--ds-blue) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
 }
 
 html.dark .VPFeature {
-  background: rgba(255, 255, 255, 0.045) !important;
-  border-color: rgba(255, 255, 255, 0.09) !important;
+  background: rgba(255, 255, 255, 0.06) !important;
+  border-color: rgba(255, 255, 255, 0.14) !important;
+  border-bottom-color: rgba(255, 255, 255, 0.05) !important;
+  box-shadow:
+    0 14px 40px rgba(0, 0, 0, 0.45),
+    inset 0 1.5px 0 rgba(255, 255, 255, 0.18) !important;
+}
+
+html.dark .VPFeature::before {
+  background: linear-gradient(
+    112deg,
+    rgba(255, 255, 255, 0.08),
+    rgba(255, 255, 255, 0.02) 32%,
+    transparent 66%
+  );
 }
 
 html.dark .VPFeature .title {
@@ -793,6 +963,10 @@ html.dark .VPFeature .title {
 
 html.dark .VPFeature .details {
   color: var(--vp-c-text-2) !important;
+}
+
+html.dark .VPFeature .icon {
+  background: rgba(255, 255, 255, 0.10) !important;
 }
 
 .VPHome .VPFeatures {
