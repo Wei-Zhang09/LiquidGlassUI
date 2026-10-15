@@ -311,10 +311,19 @@ html.dark {
  * ⚠️ 别把它做成扁平白胶囊。
  * 一个讲液态玻璃的库、自己的导航却是实心白条，是产品自我否定 ——
  * 这比"不好看"严重，它让读者不相信这个库真的会做玻璃。
+ *
+ * ⚠️⚠️ 对齐：导航的左右边界必须与下方内容列**共用同一套边距**，
+ * 否则在宽屏下会漂移（实测 1920px 时导航左比侧栏左多 388px、
+ * 右侧留白 400px vs 目录的 272px，整块内容中心偏移 -130px）。
+ *
+ * 做法：导航宽度 = 视口 − 侧栏占位(340px) − 右侧留白(32px×2)，
+ * 并左对齐到侧栏右边缘之后的内容区，而不是自己居中。
  */
 .VPNav .VPNavBar {
-  width: min(1120px, calc(100% - 40px)) !important;
-  margin: 14px auto 0 !important;
+  /* 内容列 = 视口 − 侧栏(340) − 右留白(32) − 左留白(32) */
+  width: auto !important;
+  max-width: none !important;
+  margin: 14px 32px 0 calc(360px + 32px) !important;
   height: 56px !important;
   border-radius: var(--doc-radius-pill) !important;
   /* 填充降到 0.26 —— 原来 0.44 + 高光层叠加后接近 0.7，
@@ -493,13 +502,38 @@ html.dark .VPNav .DocSearch-Button:hover {
   background: rgba(43, 52, 69, 0.05) !important;
 }
 
-/* 有侧栏时保持**同一套令牌**（不要再写死填充，否则与主规则冲突：
-   这里曾是 0.78，覆盖了主规则的 0.26，导致导航比其他面板明显更实）。 */
-.VPNav.has-sidebar .VPNavBar,
-.VPNav .VPNavBar.has-sidebar {
+/* 有侧栏的页面（文档页）：导航左对齐到内容列。
+   ⚠️ VitePress 把 has-sidebar 加在 **.VPNavBar 自身**（不是父级 .VPNav），
+   所以必须用 `.VPNavBar.has-sidebar`，写 `.VPNav.has-sidebar .VPNavBar` 不匹配。
+   ⚠️ 左边距只在宽屏（侧栏固定显示，≥1440）时才留 360px；
+   窄屏侧栏是抽屉，导航要占满。 */
+.VPNavBar.has-sidebar {
+  width: auto !important;
+  max-width: none !important;
+  margin: 14px 32px 0 calc(360px + 32px) !important;
   background: var(--doc-glass-nav) !important;
   border: 1px solid var(--doc-glass-border-top) !important;
   border-bottom-color: var(--doc-glass-border-bottom) !important;
+}
+
+@media (max-width: 1439px) {
+  .VPNavBar.has-sidebar {
+    margin-left: 32px !important;
+  }
+}
+
+@media (max-width: 959px) {
+  .VPNavBar.has-sidebar {
+    margin-left: 24px !important;
+    margin-right: 24px !important;
+  }
+}
+
+/* 无侧栏的页面（首页）：导航居中，宽度与内容列一致 */
+.VPNav:not(:has(.VPNavBar.has-sidebar)) .VPNavBar {
+  width: min(1180px, calc(100% - 64px)) !important;
+  max-width: none !important;
+  margin: 14px auto 0 !important;
 }
 
 /* 浮动胶囊的占位。
@@ -510,8 +544,13 @@ html.dark .VPNav .DocSearch-Button:hover {
   --vp-nav-height: 52px;
   /* ⚠️ 侧栏实际宽度是 328px（见 .VPSidebar 的 width），
      VitePress 用这个变量算正文区偏移。不改的话正文会和变宽的侧栏重叠。
-     这里给 340 = 328 + 12（左侧 margin）。 */
-  --vp-sidebar-width: 340px;
+     这里给 360 = 328（侧栏宽）+ 32（左侧 margin）。 */
+  --vp-sidebar-width: 360px;
+  /* ⚠️ VitePress 默认在 >1440px 时把布局居中（max-width: 1440px），
+     导致宽屏下右侧多出大片留白、整块内容中心偏移
+     （实测 1920px 偏移 -136px）。
+     提高到 3840px 后，宽屏也用同一套「左右各 32px」的边距。 */
+  --vp-layout-max-width: 3840px;
 }
 
 /* ============================================================
@@ -540,7 +579,9 @@ html.dark .VPNav .DocSearch-Button:hover {
      而固定宽度 328px 不跟着变 → 内容被挤成一条，文字被硬裁
      （用户截图里左侧 67% 空白、文字挤在右侧且截断，就是这个）。
      因此这里必须**同时重置 padding**，并把宽度改为跟随视口计算。 */
-  margin: 0 0 16px 12px !important;
+  /* ⚠️ 边距必须与右侧留白对称：原来左边 12px / 右边 32px，
+     导致整块内容中心偏移。统一为 32px（与目录右边距一致）。 */
+  margin: 0 0 32px 32px !important;
   padding-left: 32px !important;
   padding-right: 32px !important;
   width: 328px !important;
@@ -550,6 +591,22 @@ html.dark .VPNav .DocSearch-Button:hover {
   height: auto !important;
   overflow-y: auto;
   overflow-x: hidden;
+}
+
+/**
+ * ⚠️ 宽屏（≥1440，侧栏是固定面板而非抽屉）时，侧栏顶边要和导航胶囊对齐。
+ * 原来侧栏 `top: 0` 而导航 `margin-top: 14px` —— 两个浮动面板顶边差 14px，
+ * 看起来像没对齐。二者水平不重叠（侧栏 32~360，导航从 392 起），
+ * 所以可以直接把侧栏顶边设成 14px。
+ * 同时 padding-top 从 82px 降到 24px —— 82px 是为**通栏导航**预留的，
+ * 现在导航和侧栏并排，不需要让位。
+ */
+@media (min-width: 1440px) {
+  .VPSidebar {
+    top: 14px !important;
+    bottom: 32px !important;
+    padding-top: 24px !important;
+  }
 }
 
 .VPSidebar .curtain {
@@ -695,10 +752,23 @@ html.dark .vp-doc h2 {
   border-radius: var(--doc-radius-lg);
   box-shadow: var(--doc-glass-shadow), var(--doc-glass-inset-highlight);
   padding: 14px 8px;
-  /* 与正文卡片顶对齐 —— 实测原本差 60px（目录 100 / 正文 160）。
-     正文卡片的 margin-top 是 22px，但其内部 h1 还有额外边距，
-     因此目录要多加 38px 才能视觉齐平（实测差值）。 */
-  margin-top: 60px;
+  /* ⚠️ 目录顶边要与正文卡片顶边齐平。
+     真正的偏移源不是这里，而是祖先 `.aside-container` 的
+     `padding-top: 100px`（VitePress 为通栏导航预留）。
+     现在导航是浮动胶囊、正文从 y=102 起，所以：
+       ① 下面把 .aside-container 的 padding-top 改成 102px
+       ② 这里把 margin-top 归零（原 60px 是给旧状态打补丁）
+     改完后目录 y = 102 = 正文卡片 y。 */
+  margin-top: 0;
+}
+
+/**
+ * ⚠️ VitePress 给目录侧设了 `padding-top: 100px`（为通栏导航预留）。
+ * 我们的导航是浮动胶囊（底 70），正文卡片从 y=102 起，
+ * 目录必须对齐同一水平线，否则右侧比正文低 58px。
+ */
+.VPDoc .aside .aside-container {
+  padding-top: 102px !important;
 }
 
 /* 目录标题 */
@@ -876,7 +946,71 @@ html.dark .vp-doc .custom-block {
 /* 浮动胶囊覆盖在内容之上，所以内容区要自己让开它的高度。
    胶囊：margin-top 14 + 高 52 → 底部 y=66，再留 24px 呼吸 = 90px。 */
 .VPContent {
-  padding-top: 90px !important;
+  /* ⚠️ 原来 90px（为通栏导航预留）。现在导航是浮动胶囊（底 70），
+     90px 让正文卡片从 y=160 才开始，顶部空一大块。
+     收到 32px → 卡片从 y≈102 起，与导航底保持 32px 呼吸，
+     和水平方向的 32px 节奏一致。 */
+  padding-top: 32px !important;
+}
+
+/**
+ * 正文容器的左右留白必须**对称**，且与导航共用同一套边距。
+ * 实测原状：侧栏右→正文左 78px，正文右→目录左 78px，
+ * 但目录右→视口右 32px、侧栏左→视口左 12px —— 不对称，
+ * 整块内容中心偏移 -130px（1920px 视口）。
+ */
+.VPDoc .container {
+  max-width: none !important;
+}
+
+/**
+ * ⚠️ 正文区必须**让开侧栏**。
+ * VitePress 原本用 --vp-sidebar-width 给 .VPDoc 加左边距，
+ * 但我们覆盖 max-width 后它失效了 —— 实测 1920px 时
+ * .VPDoc 的 padding-left 只有 32px，而侧栏占 32~360px，
+ * 正文卡片（x=64）直接压在侧栏下面，间隙 -296px。
+ *
+ * 这里显式补上：左边距 = 侧栏占位(360) + 内容区留白(32)。
+ */
+.VPDoc.has-sidebar {
+  padding-left: calc(360px + 32px) !important;
+  padding-right: 32px !important;
+}
+
+/**
+ * ⚠️ 窄屏（<1440）时侧栏会变成抽屉/隐藏，此时不能再留 360px 左边距，
+ * 否则正文被推到视口外（实测 1280px 时右侧留白 -280px，目录超出屏幕）。
+ * 侧栏在 <960px 时由 VitePress 隐藏，这里用 1440 作为切换点。
+ */
+@media (max-width: 1439px) {
+  .VPDoc.has-sidebar {
+    padding-left: 32px !important;
+  }
+}
+
+@media (max-width: 959px) {
+  .VPDoc.has-sidebar {
+    padding-left: 24px !important;
+    padding-right: 24px !important;
+  }
+}
+
+/**
+ * ⚠️ VitePress 给正文列设了 `max-width: 688px`（阅读宽度限制）。
+ * 在宽屏下内容容器有 1600px，而卡片只占 688px →
+ * 右侧堆出 488px 空隙（实测 1920px），整页看起来左重右空。
+ *
+ * 这里让正文列撑满可用宽度。但**不能让它溢出到侧栏下面** ——
+ * `.VPContent` 已由 VitePress 用 --vp-sidebar-width 让开侧栏，
+ * 所以只放宽 max-width，不要动 flex（加 flex:1 会让卡片向左溢出，
+ * 实测 docLeft 变成 64px、与侧栏重叠 296px）。
+ */
+.VPDoc .content-container {
+  max-width: none !important;
+}
+
+.VPDoc .content {
+  max-width: none !important;
 }
 
 /* ⚠️ VitePress 给 hero 设了 margin-top: -52px（= 负的 --vp-nav-height），
