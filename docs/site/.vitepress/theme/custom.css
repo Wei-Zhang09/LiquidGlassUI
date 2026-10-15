@@ -198,6 +198,77 @@ html.dark {
 }
 
 /* ============================================================
+   3. 统一的设计令牌 —— 圆角 / 玻璃填充 / 边框
+   ============================================================ */
+
+/**
+ * ⚠️ 这些令牌是**为了统一**而存在的，别绕过它们写死数值。
+ *
+ * 实测发现的不统一（用户指出）：
+ *   圆角：导航 9999px / 正文 24px / 代码块 14px / 提示框 12px / 侧栏 0px
+ *   填充：导航 0.78 / 正文 0.76 / 侧栏 0.40 / 目录 **完全透明**
+ *   容器策略：正文有卡片，侧栏和目录**没有任何容器**，文字直接压在背景上
+ *
+ * 结果：右侧目录的低对比文字压在紫色背景上几乎读不清；
+ * 同一个页面出现三套不同的容器处理。
+ *
+ * 统一原则：
+ *  - **圆角分四档**（与库的 GlassRadiusTokens 对齐）：sm/md/lg/pill
+ *  - **玻璃填充分三档**：导航级（薄）/ 面板级（中）/ 内嵌级（更薄）
+ *  - **凡是承载文字的区域，必须有玻璃容器**，不允许裸文字压背景
+ */
+:root {
+  /* 圆角四档 —— 对应 tokens 的 sm/md/lg/xl，pill 用于胶囊控件 */
+  --doc-radius-sm: 10px;
+  --doc-radius-md: 16px;
+  --doc-radius-lg: 24px;
+  --doc-radius-pill: 9999px;
+
+  /* 玻璃填充三档。
+     ⚠️ 导航的 0.26 太透：实测背后透上来的是饱和紫 (224,178,255)，
+     文字色 (92,102,120) 压在上面只有 2.90:1（低于 AA 的 4.5）。
+     提到 0.50 后仍能透出色相（玻璃感保留），但对比度回到安全区。 */
+  --doc-glass-nav: rgba(255, 255, 255, 0.50);   /* 顶部导航 */
+  --doc-glass-panel: rgba(255, 255, 255, 0.62); /* 面板：正文卡片、侧栏、目录 */
+  --doc-glass-inset: rgba(43, 52, 69, 0.035);   /* 内嵌：代码块、表头 */
+
+  /* 玻璃边框（上亮下暗，统一） */
+  --doc-glass-border-top: rgba(255, 255, 255, 0.68);
+  --doc-glass-border-bottom: rgba(120, 150, 195, 0.26);
+
+  /* 玻璃阴影（统一） */
+  --doc-glass-shadow:
+    0 14px 40px rgba(40, 60, 90, 0.14),
+    0 2px 6px rgba(40, 60, 90, 0.06);
+  --doc-glass-inset-highlight: inset 0 1.5px 0 rgba(255, 255, 255, 0.80);
+}
+
+html.dark {
+  /* ⚠️ --ds-text* 原本只在 :root 定义（浅色值），暗色模式下被 19 处规则
+     直接引用 → 深色字压在深色玻璃上。实测右侧目录只有 1.15:1。
+     在这里统一覆盖，一处修好全部引用点，而不是逐个加暗色规则。 */
+  --ds-text: #e2e8f2;
+  --ds-text-muted: #a8b2c4;
+  --ds-text-faint: #8b95a8;
+  /* 边框与底色也要随主题变 */
+  --ds-border: rgba(255, 255, 255, 0.10);
+  --ds-border-strong: rgba(255, 255, 255, 0.18);
+
+  /* ⚠️ 暗色导航不能用「白色玻璃」—— 透上来的是饱和紫背景 (81,57,159)，
+     白玻璃叠上去产生中灰，与浅色文字对比不足（实测 3.55:1）。
+     改用**深色玻璃**（深蓝黑），把背景压暗，浅色文字才有对比。 */
+  --doc-glass-nav: rgba(14, 20, 34, 0.72);
+  --doc-glass-panel: rgba(16, 24, 40, 0.62);
+  --doc-glass-inset: rgba(255, 255, 255, 0.04);
+  --doc-glass-border-top: rgba(255, 255, 255, 0.16);
+  --doc-glass-border-bottom: rgba(255, 255, 255, 0.05);
+  --doc-glass-shadow:
+    0 14px 40px rgba(0, 0, 0, 0.45),
+    0 2px 6px rgba(0, 0, 0, 0.20);
+  --doc-glass-inset-highlight: inset 0 1.5px 0 rgba(255, 255, 255, 0.16);
+}
+
+/* ============================================================
    4. 工具类
    ============================================================ */
 
@@ -209,7 +280,7 @@ html.dark {
   -webkit-backdrop-filter: blur(var(--lg-glass-blur)) saturate(var(--lg-glass-sat));
   border: 1px solid var(--lg-glass-border);
   box-shadow: var(--lg-glass-shadow), var(--lg-glass-inset);
-  border-radius: 20px;
+  border-radius: var(--doc-radius-lg);
 }
 
 .lg-glass--strong {
@@ -241,15 +312,15 @@ html.dark {
   width: min(1120px, calc(100% - 40px)) !important;
   margin: 14px auto 0 !important;
   height: 56px !important;
-  border-radius: 9999px !important;
+  border-radius: var(--doc-radius-pill) !important;
   /* 填充降到 0.26 —— 原来 0.44 + 高光层叠加后接近 0.7，
      色相被压成一片死白。0.26 能让背景色真正透出来。 */
-  background: rgba(255, 255, 255, 0.26) !important;
+  background: var(--doc-glass-nav) !important;
   backdrop-filter: blur(22px) saturate(180%) !important;
   -webkit-backdrop-filter: blur(22px) saturate(180%) !important;
   /* 上亮下暗的边框：玻璃的「玻璃感」主要靠边缘，不是靠模糊 */
-  border: 1px solid rgba(255, 255, 255, 0.68) !important;
-  border-bottom-color: rgba(120, 150, 195, 0.30) !important;
+  border: 1px solid var(--doc-glass-border-top) !important;
+  border-bottom-color: var(--doc-glass-border-bottom) !important;
   box-shadow:
     0 14px 44px rgba(33, 49, 62, 0.20),
     0 2px 6px rgba(33, 49, 62, 0.08),
@@ -286,8 +357,8 @@ html.dark {
   z-index: 1;
 }
 
+/* 暗色导航：不再写死填充，用令牌（否则覆盖主规则，令牌形同虚设）。 */
 html.dark .VPNav .VPNavBar {
-  background: rgba(255, 255, 255, 0.07) !important;
   border-color: rgba(255, 255, 255, 0.16) !important;
   border-bottom-color: rgba(255, 255, 255, 0.06) !important;
   box-shadow:
@@ -349,13 +420,15 @@ html.dark .VPNav .VPNavBar .VPNavBarTitle .title {
   color: #e2e8f2;
 }
 
-/* 菜单项：悬停时给一块小玻璃 */
+/* 菜单项：悬停时给一块小玻璃。
+   文字用正文色而非 muted —— 导航玻璃会透出背景色相，
+   muted 压在有色底上对比度不足（实测 2.90:1）。 */
 .VPNav .VPNavBarMenuLink {
-  border-radius: 9999px !important;
+  border-radius: var(--doc-radius-pill) !important;
   padding: 0 14px !important;
   font-size: 14px;
   font-weight: 500;
-  color: var(--ds-text-muted) !important;
+  color: var(--ds-text) !important;
   transition: color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -371,12 +444,9 @@ html.dark .VPNav .VPNavBar .VPNavBarTitle .title {
   background: transparent !important;
 }
 
-html.dark .VPNav .VPNavBarMenuLink {
-  color: var(--vp-c-text-2) !important;
-}
-
+/* 暗色下不再单独覆盖文字色 —— --ds-text 令牌已随主题变化。
+   这里曾写 var(--vp-c-text-2)（#9aa5b8），比令牌值浅，导致 1.91:1。 */
 html.dark .VPNav .VPNavBarMenuLink:hover {
-  color: var(--vp-c-text-1) !important;
   background: rgba(255, 255, 255, 0.10) !important;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.10);
 }
@@ -388,7 +458,7 @@ html.dark .VPNav .VPNavBarMenuLink:hover {
   backdrop-filter: blur(10px) !important;
   -webkit-backdrop-filter: blur(10px) !important;
   border: 1px solid rgba(255, 255, 255, 0.55) !important;
-  border-radius: 9999px !important;
+  border-radius: var(--doc-radius-pill) !important;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6) !important;
   height: 36px !important;
   padding: 0 12px !important;
@@ -412,23 +482,20 @@ html.dark .VPNav .DocSearch-Button:hover {
 
 .VPNav .VPSwitch,
 .VPNav .VPSocialLink {
-  border-radius: 9999px !important;
+  border-radius: var(--doc-radius-pill) !important;
 }
 
 .VPNav .VPSocialLink:hover {
   background: rgba(43, 52, 69, 0.05) !important;
 }
 
-/* 有侧栏时同样保持胶囊 */
+/* 有侧栏时保持**同一套令牌**（不要再写死填充，否则与主规则冲突：
+   这里曾是 0.78，覆盖了主规则的 0.26，导致导航比其他面板明显更实）。 */
 .VPNav.has-sidebar .VPNavBar,
 .VPNav .VPNavBar.has-sidebar {
-  background: rgba(255, 255, 255, 0.78) !important;
-  border: 1px solid var(--ds-border) !important;
-}
-
-html.dark .VPNav .VPNavBar.has-sidebar {
-  background: rgba(20, 28, 44, 0.72) !important;
-  border-color: rgba(255, 255, 255, 0.10) !important;
+  background: var(--doc-glass-nav) !important;
+  border: 1px solid var(--doc-glass-border-top) !important;
+  border-bottom-color: var(--doc-glass-border-bottom) !important;
 }
 
 /* 浮动胶囊的占位。
@@ -443,18 +510,23 @@ html.dark .VPNav .VPNavBar.has-sidebar {
    6. 侧边栏
    ============================================================ */
 
-/* 侧栏也做玻璃（浮在背景之上，与导航同一材质语言） */
+/* 侧栏：与导航同源的玻璃，圆角用 lg 档（浮动面板而非贴边） */
 .VPSidebar {
-  background: rgba(255, 255, 255, 0.40) !important;
-  backdrop-filter: blur(22px) saturate(140%) !important;
-  -webkit-backdrop-filter: blur(22px) saturate(140%) !important;
-  border-right: 1px solid rgba(255, 255, 255, 0.50) !important;
+  background: var(--doc-glass-panel) !important;
+  backdrop-filter: blur(22px) saturate(150%) !important;
+  -webkit-backdrop-filter: blur(22px) saturate(150%) !important;
+  border: 1px solid var(--doc-glass-border-top) !important;
+  border-bottom-color: var(--doc-glass-border-bottom) !important;
+  border-radius: var(--doc-radius-lg) !important;
+  box-shadow: var(--doc-glass-shadow), var(--doc-glass-inset-highlight) !important;
   padding-top: 82px !important;
-}
-
-html.dark .VPSidebar {
-  background: rgba(255, 255, 255, 0.05) !important;
-  border-right-color: rgba(255, 255, 255, 0.10) !important;
+  /* 浮动面板：左右留出间距，与导航胶囊的浮动语言一致 */
+  margin: 0 0 16px 12px !important;
+  width: calc(var(--vp-sidebar-width) - 12px) !important;
+  top: 0 !important;
+  bottom: 16px !important;
+  height: auto !important;
+  overflow-y: auto;
 }
 
 .VPSidebar .curtain {
@@ -475,7 +547,7 @@ html.dark .VPSidebar {
 }
 
 .VPSidebarItem .VPSidebarItem .item {
-  border-radius: 8px;
+  border-radius: var(--doc-radius-sm);
   transition: background 0.18s ease;
 }
 
@@ -492,7 +564,7 @@ html.dark .VPSidebar {
 .VPSidebarItem.level-1.is-active > .item,
 .VPSidebarItem.level-2.is-active > .item {
   background: var(--ds-blue-soft);
-  border-radius: 8px;
+  border-radius: var(--doc-radius-sm);
   box-shadow: none;
 }
 
@@ -514,14 +586,13 @@ html.dark .VPSidebarItem.level-2.is-active > .item {
    （实测：浅色 12.5:1 → 预期 ~9:1，远高于 AA 的 4.5）。 */
 .VPDoc .vp-doc {
   position: relative;
-  background: rgba(255, 255, 255, 0.76);
+  background: var(--doc-glass-panel);
   backdrop-filter: blur(28px) saturate(140%);
   -webkit-backdrop-filter: blur(28px) saturate(140%);
-  border: 1px solid rgba(255, 255, 255, 0.62);
-  border-radius: 24px;
-  box-shadow:
-    0 20px 60px rgba(40, 60, 90, 0.13),
-    inset 1px 1px 0 rgba(255, 255, 255, 0.7);
+  border: 1px solid var(--doc-glass-border-top);
+  border-bottom-color: var(--doc-glass-border-bottom);
+  border-radius: var(--doc-radius-lg);
+  box-shadow: var(--doc-glass-shadow), var(--doc-glass-inset-highlight);
   padding: 34px 38px;
   margin-top: 22px;
   overflow: hidden;
@@ -535,7 +606,7 @@ html.dark .VPSidebarItem.level-2.is-active > .item {
   left: 0;
   right: 0;
   height: 40%;
-  border-radius: 24px 24px 0 0;
+  border-radius: var(--doc-radius-lg) var(--doc-radius-lg) 0 0;
   pointer-events: none;
   background: linear-gradient(
     112deg,
@@ -584,18 +655,54 @@ html.dark .vp-doc h2 {
   border-top-color: rgba(255, 255, 255, 0.08);
 }
 
-.VPDoc .aside .VPDocOutlineItem a {
-  border-radius: 6px;
-  padding: 2px 8px;
-  font-size: 13px;
+/* 右侧目录：**必须给玻璃容器**。
+   原来完全透明，文字直接压在饱和的紫/粉背景上几乎读不清 ——
+   这是页面上最明显的缺陷（左侧栏在淡蓝区还能读，右侧在紫区就读不了）。 */
+.VPDoc .aside .VPDocAsideOutline {
+  background: var(--doc-glass-panel);
+  backdrop-filter: blur(20px) saturate(150%);
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
+  border: 1px solid var(--doc-glass-border-top);
+  border-bottom-color: var(--doc-glass-border-bottom);
+  border-radius: var(--doc-radius-lg);
+  box-shadow: var(--doc-glass-shadow), var(--doc-glass-inset-highlight);
+  padding: 14px 8px;
+  /* 与正文卡片顶对齐 —— 实测原本差 60px（目录 100 / 正文 160）。
+     正文卡片的 margin-top 是 22px，但其内部 h1 还有额外边距，
+     因此目录要多加 38px 才能视觉齐平（实测差值）。 */
+  margin-top: 60px;
+}
+
+/* 目录标题 */
+.VPDoc .aside .outline-title {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
   color: var(--ds-text-faint);
+  padding: 0 8px 8px;
+}
+
+.VPDoc .aside .VPDocOutlineItem a {
+  border-radius: var(--doc-radius-sm);
+  padding: 4px 8px;
+  font-size: 13px;
+  /* 目录文字压在玻璃底上，实测 --ds-text-muted(#5c6678) 只有 2.74:1。
+     改用正文色 --ds-text（#2b3445），浅色下实测 9.64:1。 */
+  color: var(--ds-text);
   transition: color 0.18s ease, background 0.18s ease;
 }
 
-.VPDoc .aside .VPDocOutlineItem a:hover,
-.VPDoc .aside .VPDocOutlineItem a.active {
-  background: transparent;
+
+.VPDoc .aside .VPDocOutlineItem a:hover {
+  background: rgba(77, 107, 254, 0.10);
   color: var(--ds-blue);
+}
+
+.VPDoc .aside .VPDocOutlineItem a.active {
+  background: rgba(77, 107, 254, 0.14);
+  color: var(--ds-blue);
+  font-weight: 600;
 }
 
 /* ============================================================
@@ -607,7 +714,7 @@ html.dark .vp-doc h2 {
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
   border: 1px solid var(--ds-border);
-  border-radius: 14px;
+  border-radius: var(--doc-radius-md);
   box-shadow: none;
   position: relative;
 }
@@ -630,7 +737,7 @@ html.dark .vp-doc div[class*='language-'] {
 .vp-doc :not(pre) > code {
   background: rgba(77, 107, 254, 0.08);
   border: none;
-  border-radius: 5px;
+  border-radius: 6px;
   box-shadow: none;
   color: #2f4ad0;
   font-weight: 500;
@@ -655,7 +762,7 @@ html.dark .vp-doc :not(pre) > code {
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
   border: 1px solid var(--ds-border);
-  border-radius: 14px;
+  border-radius: var(--doc-radius-md);
   overflow: hidden;
   box-shadow: none;
 }
@@ -691,7 +798,6 @@ html.dark .vp-doc table {
 html.dark .vp-doc th {
   background: rgba(255, 255, 255, 0.04);
   border-bottom-color: rgba(255, 255, 255, 0.09);
-  color: var(--vp-c-text-1);
 }
 
 html.dark .vp-doc th,
@@ -709,7 +815,7 @@ html.dark .vp-doc td {
   -webkit-backdrop-filter: none;
   border: 1px solid rgba(77, 107, 254, 0.16);
   border-left: 3px solid var(--ds-blue);
-  border-radius: 12px;
+  border-radius: var(--doc-radius-sm);
   box-shadow: none;
   font-size: 14px;
 }
@@ -797,11 +903,6 @@ html.dark .vp-doc .custom-block {
   color: var(--ds-text) !important;
 }
 
-html.dark .VPHome .VPHero .name {
-  -webkit-text-fill-color: var(--vp-c-text-1) !important;
-  color: var(--vp-c-text-1) !important;
-}
-
 .VPHome .VPHero .text {
   font-size: 56px !important;
   line-height: 1.1 !important;
@@ -809,10 +910,6 @@ html.dark .VPHome .VPHero .name {
   letter-spacing: -0.03em !important;
   color: var(--ds-text) !important;
   margin-top: 4px !important;
-}
-
-html.dark .VPHome .VPHero .text {
-  color: var(--vp-c-text-1) !important;
 }
 
 .VPHome .VPHero .tagline {
@@ -834,7 +931,7 @@ html.dark .VPHome .VPHero .text {
   background: var(--ds-blue) !important;
   border: 1px solid var(--ds-blue) !important;
   color: #fff !important;
-  border-radius: 9999px !important;
+  border-radius: var(--doc-radius-pill) !important;
   box-shadow: 0 4px 14px rgba(77, 107, 254, 0.28) !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
@@ -854,7 +951,7 @@ html.dark .VPHome .VPHero .text {
   background: #ffffff !important;
   border: 1px solid var(--ds-border-strong) !important;
   color: var(--ds-text) !important;
-  border-radius: 9999px !important;
+  border-radius: var(--doc-radius-pill) !important;
   box-shadow: var(--ds-shadow-sm) !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
@@ -881,7 +978,7 @@ html.dark .VPButton.alt {
   -webkit-backdrop-filter: blur(20px) saturate(170%) !important;
   border: 1px solid rgba(255, 255, 255, 0.62) !important;
   border-bottom-color: rgba(120, 150, 195, 0.26) !important;
-  border-radius: 20px !important;
+  border-radius: var(--doc-radius-lg) !important;
   box-shadow:
     0 14px 40px rgba(40, 60, 90, 0.14),
     0 2px 6px rgba(40, 60, 90, 0.06),
@@ -934,7 +1031,7 @@ html.dark .VPButton.alt {
 
 .VPFeature .icon {
   background: rgba(255, 255, 255, 0.50) !important;
-  border-radius: 10px;
+  border-radius: var(--doc-radius-sm);
   color: var(--ds-blue) !important;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
 }
@@ -955,14 +1052,6 @@ html.dark .VPFeature::before {
     rgba(255, 255, 255, 0.02) 32%,
     transparent 66%
   );
-}
-
-html.dark .VPFeature .title {
-  color: var(--vp-c-text-1) !important;
-}
-
-html.dark .VPFeature .details {
-  color: var(--vp-c-text-2) !important;
 }
 
 html.dark .VPFeature .icon {
@@ -1023,7 +1112,7 @@ html.dark .VPFooter {
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
   border: 1px solid var(--ds-border) !important;
-  border-radius: 14px !important;
+  border-radius: var(--doc-radius-md) !important;
   box-shadow: var(--ds-shadow-sm) !important;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
@@ -1049,12 +1138,12 @@ html.dark .VPDocFooter .pager-link {
   -webkit-backdrop-filter: blur(28px) saturate(160%) !important;
   border: 1px solid var(--ds-border-strong) !important;
   box-shadow: var(--ds-shadow-lg) !important;
-  border-radius: 18px !important;
+  border-radius: var(--doc-radius-lg) !important;
 }
 
 .VPLocalSearchBox .search-bar {
   border: 1px solid var(--ds-border) !important;
-  border-radius: 10px !important;
+  border-radius: var(--doc-radius-sm) !important;
 }
 
 .VPNavScreen {
