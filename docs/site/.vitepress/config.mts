@@ -32,6 +32,7 @@ export default defineConfig({
     nav: [
       { text: '指南', link: '/guide/' },
       { text: '组件', link: '/components/glass-surface' },
+      { text: 'Compose', link: '/compose/' },
       { text: '平台', link: '/platform/' },
       { text: '验证', link: '/verification' },
     ],
@@ -88,6 +89,31 @@ export default defineConfig({
             { text: '能力矩阵', link: '/platform/' },
             { text: 'Compose（桌面 / Android）', link: '/platform/compose' },
             { text: 'iOS', link: '/platform/ios' },
+          ],
+        },
+      ],
+      '/compose/': [
+        {
+          text: 'Compose 组件',
+          items: [
+            { text: '概览与用法', link: '/compose/' },
+            { text: 'GlassSurface 玻璃面', link: '/compose/glass-surface' },
+            { text: 'GlassGroup 玻璃融合', link: '/compose/glass-group' },
+          ],
+        },
+        {
+          text: '桌面形态',
+          items: [
+            { text: 'GlassSidebar 侧边导航', link: '/compose/glass-sidebar' },
+            { text: 'GlassMenu 下拉菜单', link: '/compose/glass-menu' },
+            { text: 'GlassTooltip 提示框', link: '/compose/glass-tooltip' },
+          ],
+        },
+        {
+          text: '移动形态',
+          items: [
+            { text: 'GlassBottomBar 底部标签栏', link: '/compose/glass-bottombar' },
+            { text: 'GlassDialog 底部抽屉', link: '/compose/glass-dialog' },
           ],
         },
       ],
