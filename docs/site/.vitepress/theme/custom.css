@@ -609,6 +609,18 @@ html.dark .VPNav .DocSearch-Button:hover {
   }
 }
 
+/**
+ * ⚠️ 窄屏（<1440）时导航是**全宽**的（与侧栏水平重叠），
+ * 所以侧栏必须从导航下方开始，否则顶部 70px 被导航遮住
+ * （实测 1280px：侧栏顶 y=0、导航底 y=70 → 遮挡 70px）。
+ */
+@media (max-width: 1439px) {
+  .VPSidebar {
+    top: 84px !important;
+    bottom: 16px !important;
+  }
+}
+
 .VPSidebar .curtain {
   display: none !important;
 }
