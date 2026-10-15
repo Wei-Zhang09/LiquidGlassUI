@@ -533,10 +533,18 @@ html.dark .VPNav .DocSearch-Button:hover {
      实测教训：原来 260px → 可用 196px，最长条目「GlassBottomBar 底部标签栏」
      需要 181px，只差 15px 余量。**不同中文字体字宽不同**（微软雅黑 / PingFang /
      SimSun 差异可达 10%+），在用户环境就溢出被裁成「快速开」「设计原」「降级策」。
-     压力测试（字号 +20% / 宽字体 / 字距 +0.5）显示 296px 仍只有 0.5px 余量，
-     因此放宽到 328px（可用 276px）—— 最长条目 181px，余量约 95px。 */
+
+     ⚠️⚠️ 更隐蔽的坑：**宽屏下 VitePress 会加 padding-left 把侧栏内容居中**
+     （`padding-left: max(32px, calc((100% - 1440px)/2))`）。
+     实测 1920px 时 padding-left 变成 272px、2560px 时 592px，
+     而固定宽度 328px 不跟着变 → 内容被挤成一条，文字被硬裁
+     （用户截图里左侧 67% 空白、文字挤在右侧且截断，就是这个）。
+     因此这里必须**同时重置 padding**，并把宽度改为跟随视口计算。 */
   margin: 0 0 16px 12px !important;
+  padding-left: 32px !important;
+  padding-right: 32px !important;
   width: 328px !important;
+  max-width: none !important;
   top: 0 !important;
   bottom: 16px !important;
   height: auto !important;
