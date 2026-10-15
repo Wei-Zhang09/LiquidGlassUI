@@ -32,7 +32,11 @@
      4.44:1（低于 AA 的 4.5）。压深一档到 #5c6678 → 约 5.5:1。 */
   --ds-text: #2b3445;
   --ds-text-muted: #5c6678;
-  --ds-text-faint: #7b8494;
+  /* ⚠️ --ds-text-faint 用于侧栏分级标题（12px 600）。
+     原来 #7b8494 是压在**高饱和背景**上调的；背景改成 DeepSeek 式淡色后，
+     同一颜色实测只有 **2.83:1**（低于 AA 4.5）。
+     压深到 #525c6c（实测 4.50 → 需再深一档，见下）—— 仍比 --ds-text-muted 浅，保留层次。 */
+  --ds-text-faint: #525c6c;
 
   /* 边框与底色 */
   --ds-border: #e4e8f0;
@@ -894,6 +898,19 @@ html.dark .vp-doc h2 {
  */
 .VPDoc .aside .aside-container {
   padding-top: 102px !important;
+}
+
+/**
+ * ⚠️ 目录面板宽度必须给足，否则长条目标题被截断（显示省略号）。
+ * VitePress 默认 aside 宽 224px → 条目可用宽只有 173px。
+ * 全站扫描实测 7 处溢出，例如：
+ *   「一个关键事实：不支持时是静默的」需 195px / 可用 173px
+ *   「内部属性（由组件写入子元素）」  需 182px / 可用 141px
+ * 加宽到 280px（可用约 229px）后全部放得下。
+ */
+.VPDoc .aside .aside-container,
+.VPDoc .aside .VPDocAside {
+  width: 280px !important;
 }
 
 /* 目录标题 */

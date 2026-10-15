@@ -28,7 +28,7 @@
 | Safari | 磨砂（同上） |
 | 不支持 `backdrop-filter` | 实心 |
 
-## Compose（Windows 桌面 / Android）
+## Compose 双端
 
 两端共用 `commonMain` 的同一份组件代码，但**渲染路径不同**：
 

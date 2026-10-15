@@ -91,5 +91,5 @@ enum class GlassLevel {
 
 ## 相关
 
-- [GlassGroup](/compose/glass-group) —— 多个玻璃元素融合
+- [GlassGroup](/desktop/glass-group) —— 多个玻璃元素融合
 - [设计原则](/guide/design) —— 材质是怎么构成的

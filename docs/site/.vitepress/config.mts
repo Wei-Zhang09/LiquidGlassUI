@@ -42,11 +42,19 @@ export default defineConfig({
   themeConfig: {
     logo: '/logo.png',
 
+    /**
+     * 导航：**按平台分区**（用户要求三端 UI 分别展示，便于区分）。
+     *  - Web      → 浏览器组件（10 个，有在线演示）
+     *  - 桌面端   → Compose 桌面形态
+     *  - 移动端   → Compose Android 形态
+     * 「平台」页保留为三端能力矩阵与选型依据。
+     */
     nav: [
       { text: '指南', link: '/guide/' },
-      { text: '组件', link: '/components/glass-surface' },
-      { text: 'Compose', link: '/compose/' },
-      { text: '平台', link: '/platform/' },
+      { text: 'Web', link: '/web/' },
+      { text: '桌面端', link: '/desktop/' },
+      { text: '移动端', link: '/mobile/' },
+      { text: '平台矩阵', link: '/platform/' },
       { text: '验证', link: '/verification' },
     ],
 
@@ -63,35 +71,79 @@ export default defineConfig({
           ],
         },
       ],
-      '/components/': [
+      '/web/': [
+        {
+          text: 'Web 组件',
+          items: [
+            { text: '总览', link: '/web/' },
+          ],
+        },
         {
           text: '基础',
           items: [
-            { text: 'GlassSurface 玻璃面', link: '/components/glass-surface' },
-            { text: 'GlassCard 卡片', link: '/components/glass-card' },
-            { text: 'GlassGroup 玻璃组', link: '/components/glass-group' },
+            { text: 'GlassSurface 玻璃面', link: '/web/glass-surface' },
+            { text: 'GlassCard 卡片', link: '/web/glass-card' },
+            { text: 'GlassGroup 玻璃组', link: '/web/glass-group' },
           ],
         },
         {
           text: '交互',
           items: [
-            { text: 'GlassButton 按钮', link: '/components/glass-button' },
-            { text: 'GlassSwitch 开关', link: '/components/glass-switch' },
-            { text: 'GlassSlider 滑块', link: '/components/glass-slider' },
-            { text: 'GlassSegmented 分段控件', link: '/components/glass-segmented' },
+            { text: 'GlassButton 按钮', link: '/web/glass-button' },
+            { text: 'GlassSwitch 开关', link: '/web/glass-switch' },
+            { text: 'GlassSlider 滑块', link: '/web/glass-slider' },
+            { text: 'GlassSegmented 分段控件', link: '/web/glass-segmented' },
           ],
         },
         {
           text: '导航',
           items: [
-            { text: 'GlassNavBar 顶部导航', link: '/components/glass-navbar' },
-            { text: 'GlassBottomBar 底部标签栏', link: '/components/glass-bottombar' },
+            { text: 'GlassNavBar 顶部导航', link: '/web/glass-navbar' },
+            { text: 'GlassBottomBar 底部标签栏', link: '/web/glass-bottombar' },
           ],
         },
         {
           text: '反馈',
           items: [
-            { text: 'GlassDialog 对话框', link: '/components/glass-dialog' },
+            { text: 'GlassDialog 对话框', link: '/web/glass-dialog' },
+          ],
+        },
+      ],
+      '/desktop/': [
+        {
+          text: '桌面端组件',
+          items: [
+            { text: '总览', link: '/desktop/' },
+          ],
+        },
+        {
+          text: '共用基础',
+          items: [
+            { text: 'GlassSurface 玻璃面', link: '/desktop/glass-surface' },
+            { text: 'GlassGroup 玻璃融合', link: '/desktop/glass-group' },
+          ],
+        },
+        {
+          text: '桌面专属形态',
+          items: [
+            { text: 'GlassSidebar 侧边导航', link: '/desktop/glass-sidebar' },
+            { text: 'GlassMenu 下拉菜单', link: '/desktop/glass-menu' },
+            { text: 'GlassTooltip 提示框', link: '/desktop/glass-tooltip' },
+          ],
+        },
+      ],
+      '/mobile/': [
+        {
+          text: '移动端组件',
+          items: [
+            { text: '总览', link: '/mobile/' },
+          ],
+        },
+        {
+          text: '移动专属形态',
+          items: [
+            { text: 'GlassBottomBar 底部标签栏', link: '/mobile/glass-bottombar' },
+            { text: 'GlassDialog 底部抽屉', link: '/mobile/glass-dialog' },
           ],
         },
       ],
@@ -102,31 +154,6 @@ export default defineConfig({
             { text: '能力矩阵', link: '/platform/' },
             { text: 'Compose（桌面 / Android）', link: '/platform/compose' },
             { text: 'iOS', link: '/platform/ios' },
-          ],
-        },
-      ],
-      '/compose/': [
-        {
-          text: 'Compose 组件',
-          items: [
-            { text: '概览与用法', link: '/compose/' },
-            { text: 'GlassSurface 玻璃面', link: '/compose/glass-surface' },
-            { text: 'GlassGroup 玻璃融合', link: '/compose/glass-group' },
-          ],
-        },
-        {
-          text: '桌面形态',
-          items: [
-            { text: 'GlassSidebar 侧边导航', link: '/compose/glass-sidebar' },
-            { text: 'GlassMenu 下拉菜单', link: '/compose/glass-menu' },
-            { text: 'GlassTooltip 提示框', link: '/compose/glass-tooltip' },
-          ],
-        },
-        {
-          text: '移动形态',
-          items: [
-            { text: 'GlassBottomBar 底部标签栏', link: '/compose/glass-bottombar' },
-            { text: 'GlassDialog 底部抽屉', link: '/compose/glass-dialog' },
           ],
         },
       ],

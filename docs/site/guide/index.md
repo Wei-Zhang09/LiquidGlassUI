@@ -37,5 +37,5 @@ Firefox 与 Safari **不支持** SVG 位移贴图，但它们：
 
 - 想直接用 → [安装](/guide/install) → [快速开始](/guide/quickstart)
 - 想理解材质 → [设计原则](/guide/design)
-- 想看每个组件的 API → [组件](/components/glass-surface)
+- 想看每个组件的 API → [组件](/web/glass-surface)
 - 想确认「真的做了吗」→ [验证报告](/verification)

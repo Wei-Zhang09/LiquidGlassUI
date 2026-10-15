@@ -26,7 +26,7 @@ GlassTooltip(
 
 触屏没有 hover（手指离屏幕 2 厘米，电容屏不知道），长按是各平台通用的替代语义。
 
-## 为什么不用 `detectTapGestures`
+## 为何不用 detectTapGestures
 
 `detectTapGestures` 在收到 down 时**立即消费**事件，会破坏子元素自身的点击。
 而 tooltip 的锚点通常是按钮，需要：

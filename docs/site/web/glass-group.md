@@ -69,7 +69,7 @@
 |---|---|---|---|
 | `smoothing` | `number` | `24` | 融合半径（px）。越大越早融合；`0` 表示只做普通并集 |
 | `radius` | `number` | `26` | 圆角像素值 |
-| `surface` | 见 [GlassSurface](/components/glass-surface) | `'convexSquircle'` | 边缘高度函数 |
+| `surface` | 见 [GlassSurface](/web/glass-surface) | `'convexSquircle'` | 边缘高度函数 |
 | `theme` | `'light' \| 'dark'` | `'light'` | 配色主题 |
 
 ### 内部属性（由组件写入子元素）

@@ -87,7 +87,7 @@ Pointer Events（`pointerdown/move/up`）统一了两者，代码只需一套。
 | `aria-label` | `string` | — | 无障碍名称 |
 | `radius` | `number` | `26` | 圆角像素值 |
 | `level` | `'plain' \| 'regular' \| 'elevated' \| 'focused'` | `'regular'` | 材质层级 |
-| `surface` | 见 [GlassSurface](/components/glass-surface) | `'convexSquircle'` | 边缘高度函数 |
+| `surface` | 见 [GlassSurface](/web/glass-surface) | `'convexSquircle'` | 边缘高度函数 |
 | `theme` | `'light' \| 'dark'` | `'light'` | 配色主题 |
 
 ### 属性（JS）

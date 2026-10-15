@@ -49,7 +49,7 @@ import { GlassSurface } from '@liquidglass/web/react'
 import '@liquidglass/web/tokens.css'
 ```
 
-## Compose（Windows 桌面 / Android）
+## Compose 双端
 
 ::: warning 尚未发布到 Maven Central
 目前需要从仓库本地引用 `packages/compose`。

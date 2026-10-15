@@ -77,7 +77,7 @@
 | `heading` | `string` | — | 标题。为空时标题区隐藏 |
 | `radius` | `number` | `26` | 圆角像素值 |
 | `level` | `'plain' \| 'regular' \| 'elevated' \| 'focused'` | `'regular'` | 材质层级 |
-| `surface` | 见 [GlassSurface](/components/glass-surface) | `'convexSquircle'` | 边缘高度函数 |
+| `surface` | 见 [GlassSurface](/web/glass-surface) | `'convexSquircle'` | 边缘高度函数 |
 | `theme` | `'light' \| 'dark'` | `'light'` | 配色主题 |
 
 ### Slots

@@ -74,7 +74,7 @@
 | `value` | `string` | — | 当前选中项的 `data-value` |
 | `radius` | `number` | `26` | 圆角像素值 |
 | `level` | `'plain' \| 'regular' \| 'elevated' \| 'focused'` | `'regular'` | 材质层级 |
-| `surface` | 见 [GlassSurface](/components/glass-surface) | `'convexSquircle'` | 边缘高度函数 |
+| `surface` | 见 [GlassSurface](/web/glass-surface) | `'convexSquircle'` | 边缘高度函数 |
 | `theme` | `'light' \| 'dark'` | `'light'` | 配色主题 |
 
 ### 属性（JS）
@@ -85,7 +85,7 @@
 
 ### CSS 自定义属性
 
-继承 [GlassSurface](/components/glass-surface) 的全部变量，另加：
+继承 [GlassSurface](/web/glass-surface) 的全部变量，另加：
 
 | 变量 | 说明 |
 |---|---|

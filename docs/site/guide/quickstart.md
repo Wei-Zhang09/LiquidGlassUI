@@ -128,4 +128,4 @@ document.querySelector('lg-glass-surface').getAttribute('data-support')
 
 - [设计原则](/guide/design) —— 材质是怎么构成的
 - [降级策略](/guide/fallback) —— 不支持时发生什么
-- [组件](/components/glass-surface) —— 完整 API
+- [组件](/web/glass-surface) —— 完整 API
