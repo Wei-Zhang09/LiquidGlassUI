@@ -1,152 +1,162 @@
 /**
- * LiquidGlassUI 文档站 —— 液态玻璃主题。
+ * LiquidGlassUI 文档站 —— 视觉参照 DeepSeek 官网。
  *
- * 核心主张：**文档站本身就是液态玻璃做的**。
- * 一个讲液态玻璃的库，如果文档用普通扁平皮肤，是自相矛盾的。
+ * ## 设计基调（从 DeepSeek 官网提取）
+ * - 冷色单色系：白 / 淡紫蓝 / **一个**饱和蓝 `#4d6bfe` / 深蓝灰文字 `#2b3445`
+ * - 背景：极淡的冷色渐变 + 几乎看不见的网格，向下淡出
+ * - 导航：**浮动胶囊**（不通栏），全圆角 + 发丝边框 + 柔和阴影
+ * - 卡片：白/微透明，大圆角，发丝边框，柔和阴影
+ * - 气质：通透、安静、留白多，没有暖色与强对比
  *
- * 做法（dogfooding）：
- *  1. 引入库自己的 tokens（设计参数唯一真源）—— 文档配色与组件完全同源
- *  2. 复用组件用到的同一套材质配方（半透明 + backdrop-filter + 渐变高光
- *     + 内外阴影 + 统一左上光源）
- *  3. 顶部导航 / 侧边栏 / 代码块 / API 表格 / 搜索框全部玻璃化
- *
- * 关键约束：**文字必须仍然可读**。
- * 玻璃是背景层，正文对比度优先于材质还原 —— 内容区用更实的底
- * （surfaceModal 思路），只有导航/浮层才用高透明度玻璃。
+ * ## 与「玻璃效果」的关系（重要）
+ * 这套背景**极淡**，因此站点自身的玻璃（导航/正文面板）呈现出
+ * DeepSeek 那种「若有若无」的半透明白，而不是明显的折射 —— 这是刻意的：
+ * 站点外壳保持安静，**玻璃的展示交给演示区**（演示区仍是高对比测试图，
+ * 因为模糊一个近乎纯色的背景等于什么都没做）。
  */
 
 @import '../../../../packages/web/src/generated/tokens.css';
 
 /* ============================================================
-   1. 背景光场 —— 玻璃必须折射到东西，否则效果不可见
+   1. 调色板 —— 与 DeepSeek 官网对齐
    ============================================================ */
 
 :root {
   --lg-doc-light-angle: 45deg;
+
+  /* 品牌与文字 */
+  --ds-blue: #4d6bfe;
+  --ds-blue-hover: #3d5bf0;
+  --ds-blue-soft: rgba(77, 107, 254, 0.10);
+  /* 文字：DeepSeek 的次要文字偏灰，但实测 #6b7688 在淡背景上只有
+     4.44:1（低于 AA 的 4.5）。压深一档到 #5c6678 → 约 5.5:1。 */
+  --ds-text: #2b3445;
+  --ds-text-muted: #5c6678;
+  --ds-text-faint: #7b8494;
+
+  /* 边框与底色 */
+  --ds-border: #e4e8f0;
+  --ds-border-strong: #d4dbe8;
+  --ds-bg-base: #f8fafd;
+  --ds-bg-tint: #dce6f7;
+  --ds-grid: rgba(150, 170, 210, 0.13);
+
+  /* 阴影：DeepSeek 用很淡的冷色阴影，不是纯黑 */
+  --ds-shadow-sm: 0 2px 8px rgba(43, 52, 69, 0.05), 0 1px 2px rgba(43, 52, 69, 0.04);
+  --ds-shadow-md: 0 6px 24px rgba(43, 52, 69, 0.07), 0 1px 3px rgba(43, 52, 69, 0.04);
+  --ds-shadow-lg: 0 12px 44px rgba(43, 52, 69, 0.10), 0 2px 8px rgba(43, 52, 69, 0.05);
 }
 
-/**
- * 背景是这套设计的**地基**，不是装饰。
- *
- * 教训：第一版用「近白底 + 5% 网格 + 很淡的光斑」，结果整个站看起来是
- * 扁平的普通文档站 —— 因为**模糊一个近乎纯色的背景等于什么都没做**。
- * 玻璃要看起来像玻璃，背景必须有：
- *   1. 高饱和的彩色光斑（模糊后能看出色相渗透）
- *   2. 可见的高频纹理（网格；模糊后能看出纹理被抹平）
- *   3. 明暗对比（边缘高光才有东西可反射）
- */
+/* ============================================================
+   2. 背景 —— 极淡冷色渐变 + 向下淡出的网格
+   ============================================================ */
+
 html {
-  background-color: #cdd9e8;
+  background-color: var(--ds-bg-base);
   background-image:
-    /* 高饱和光斑：模糊后会明显渗透出颜色 */
-    radial-gradient(circle 42rem at 8% 4%, rgba(120, 175, 255, 0.85) 0%, transparent 60%),
-    radial-gradient(circle 36rem at 92% 8%, rgba(190, 145, 255, 0.80) 0%, transparent 58%),
-    radial-gradient(circle 40rem at 78% 88%, rgba(90, 220, 210, 0.70) 0%, transparent 60%),
-    radial-gradient(circle 34rem at 18% 92%, rgba(255, 170, 150, 0.68) 0%, transparent 58%),
-    radial-gradient(circle 30rem at 50% 45%, rgba(255, 255, 255, 0.90) 0%, transparent 62%),
-    linear-gradient(150deg, #b8cce4 0%, #dde7f2 38%, #c3d5e8 72%, #aec4dc 100%);
+    radial-gradient(ellipse 68rem 42rem at 50% -12%, var(--ds-bg-tint) 0%, transparent 64%),
+    radial-gradient(ellipse 46rem 32rem at 10% 6%, rgba(214, 226, 248, 0.80) 0%, transparent 60%),
+    radial-gradient(ellipse 42rem 30rem at 90% 12%, rgba(226, 220, 250, 0.58) 0%, transparent 58%),
+    linear-gradient(180deg, #eef3fb 0%, #f6f9fd 40%, #ffffff 100%);
   background-attachment: fixed;
 }
 
-/* 可见的网格：这是玻璃「模糊掉纹理」的证据 */
+/* 网格：越往下越淡（DeepSeek 的做法，让首屏有"蓝图感"而不干扰阅读） */
 html::before {
   content: "";
   position: fixed;
   inset: 0;
   pointer-events: none;
   z-index: 0;
-  opacity: 1;
   background-image:
-    linear-gradient(rgba(70, 100, 140, 0.20) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(70, 100, 140, 0.20) 1px, transparent 1px),
-    linear-gradient(rgba(70, 100, 140, 0.12) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(70, 100, 140, 0.12) 1px, transparent 1px);
-  background-size: 120px 120px, 120px 120px, 24px 24px, 24px 24px;
+    linear-gradient(var(--ds-grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--ds-grid) 1px, transparent 1px);
+  background-size: 48px 48px;
+  -webkit-mask-image: linear-gradient(180deg, #000 0%, rgba(0, 0, 0, 0.40) 42%, transparent 76%);
+  mask-image: linear-gradient(180deg, #000 0%, rgba(0, 0, 0, 0.40) 42%, transparent 76%);
 }
 
+/* 暗色：冷调深蓝，仍保持单色系 */
 html.dark {
-  background-color: #0d1520;
+  background-color: #0d1421;
   background-image:
-    /* 暗色下光斑要更亮更饱和，否则模糊后什么都看不出来 */
-    radial-gradient(circle 42rem at 8% 4%, rgba(70, 140, 240, 0.90) 0%, transparent 62%),
-    radial-gradient(circle 36rem at 92% 8%, rgba(160, 90, 250, 0.82) 0%, transparent 60%),
-    radial-gradient(circle 40rem at 78% 88%, rgba(30, 190, 185, 0.68) 0%, transparent 62%),
-    radial-gradient(circle 34rem at 18% 92%, rgba(230, 110, 80, 0.60) 0%, transparent 60%),
-    radial-gradient(circle 30rem at 50% 45%, rgba(60, 90, 130, 0.70) 0%, transparent 64%),
-    linear-gradient(150deg, #14202e 0%, #1b2a3c 38%, #16222f 72%, #101a25 100%);
+    radial-gradient(ellipse 68rem 42rem at 50% -12%, rgba(58, 86, 150, 0.45) 0%, transparent 64%),
+    radial-gradient(ellipse 46rem 32rem at 10% 6%, rgba(66, 96, 172, 0.30) 0%, transparent 60%),
+    radial-gradient(ellipse 42rem 30rem at 90% 12%, rgba(104, 78, 180, 0.24) 0%, transparent 58%),
+    linear-gradient(180deg, #101a2b 0%, #0d1421 44%, #0a1018 100%);
 }
 
 html.dark::before {
   background-image:
-    linear-gradient(rgba(150, 190, 235, 0.18) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(150, 190, 235, 0.18) 1px, transparent 1px),
-    linear-gradient(rgba(150, 190, 235, 0.10) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(150, 190, 235, 0.10) 1px, transparent 1px);
+    linear-gradient(rgba(120, 150, 200, 0.10) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(120, 150, 200, 0.10) 1px, transparent 1px);
 }
 
 /* ============================================================
-   2. 主题变量映射 —— 让 VitePress 自己的变量走玻璃材质
+   3. 主题变量
    ============================================================ */
 
 :root {
-  /* 玻璃配方（与组件同一套） */
-  --lg-glass-surface: rgba(255, 255, 255, 0.44);
-  --lg-glass-surface-strong: rgba(255, 255, 255, 0.62);
-  --lg-glass-surface-modal: rgba(255, 255, 255, 0.82);
-  --lg-glass-border: rgba(255, 255, 255, 0.58);
-  --lg-glass-border-strong: rgba(255, 255, 255, 0.80);
-  --lg-glass-blur: 24px;
-  --lg-glass-blur-strong: 34px;
-  --lg-glass-sat: 135%;
+  /* 玻璃：DeepSeek 式「若有若无」——高透明度白 + 发丝边框 */
+  --lg-glass-surface: rgba(255, 255, 255, 0.72);
+  --lg-glass-surface-strong: rgba(255, 255, 255, 0.88);
+  --lg-glass-surface-modal: rgba(255, 255, 255, 0.97);
+  --lg-glass-border: var(--ds-border);
+  --lg-glass-border-strong: var(--ds-border-strong);
+  --lg-glass-blur: 20px;
+  --lg-glass-blur-strong: 28px;
+  --lg-glass-sat: 150%;
   --lg-glass-sat-strong: 160%;
-  --lg-glass-shadow:
-    0 18px 55px rgba(57, 80, 103, 0.11),
-    0 2px 8px rgba(35, 54, 73, 0.06);
-  --lg-glass-shadow-lg:
-    0 28px 80px rgba(48, 70, 91, 0.19),
-    0 8px 24px rgba(35, 54, 73, 0.09);
-  --lg-glass-inset:
-    inset 1px 1px 0 rgba(255, 255, 255, 0.78),
-    inset -1px -1px 0 rgba(103, 127, 151, 0.10);
-  --lg-glass-inset-strong: inset 0 1px 0 rgba(255, 255, 255, 0.92);
+  --lg-glass-shadow: var(--ds-shadow-sm);
+  --lg-glass-shadow-lg: var(--ds-shadow-md);
+  --lg-glass-inset: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  --lg-glass-inset-strong: inset 0 1px 0 rgba(255, 255, 255, 1);
 
-  /* 内容区需要更实的底，否则正文压在背景上读不清 */
-  --lg-content-bg: rgba(255, 255, 255, 0.72);
+  /* 正文面板：接近纯白，保证长文可读（DeepSeek 的卡片也是白底） */
+  --lg-content-bg: rgba(255, 255, 255, 0.90);
 
-  /* 覆盖 VitePress 品牌色，走库的 tokens */
-  --vp-c-brand-1: #1f6fd0;
-  --vp-c-brand-2: #2b7fe0;
-  --vp-c-brand-3: #1a5fb4;
-  --vp-c-brand-soft: rgba(31, 111, 208, 0.16);
+  /* VitePress 变量对齐 */
+  --vp-c-brand-1: var(--ds-blue);
+  --vp-c-brand-2: var(--ds-blue-hover);
+  --vp-c-brand-3: #3a56e8;
+  --vp-c-brand-soft: var(--ds-blue-soft);
+
+  --vp-c-text-1: var(--ds-text);
+  --vp-c-text-2: var(--ds-text-muted);
+  --vp-c-text-3: var(--ds-text-faint);
+
+  --vp-c-divider: var(--ds-border);
+  --vp-c-border: var(--ds-border-strong);
+  --vp-c-gutter: var(--ds-border);
 }
 
 html.dark {
-  --lg-glass-surface: rgba(255, 255, 255, 0.10);
-  --lg-glass-surface-strong: rgba(255, 255, 255, 0.15);
-  --lg-glass-surface-modal: rgba(16, 24, 34, 0.90);
-  --lg-glass-border: rgba(255, 255, 255, 0.18);
-  --lg-glass-border-strong: rgba(255, 255, 255, 0.30);
-  --lg-glass-shadow:
-    0 18px 55px rgba(0, 0, 0, 0.50),
-    0 2px 8px rgba(0, 0, 0, 0.35);
-  --lg-glass-shadow-lg:
-    0 28px 80px rgba(0, 0, 0, 0.62),
-    0 8px 24px rgba(0, 0, 0, 0.42);
-  --lg-glass-inset:
-    inset 1px 1px 0 rgba(255, 255, 255, 0.14),
-    inset -1px -1px 0 rgba(0, 0, 0, 0.24);
-  --lg-glass-inset-strong: inset 0 1px 0 rgba(255, 255, 255, 0.20);
-  /* 正文需要足够实的底保证长文本可读，但也不能实到看不出玻璃。
-     0.72 是实测的平衡点：透出约 28% 背景色相，文字对比度仍在安全范围。 */
-  --lg-content-bg: rgba(18, 26, 36, 0.72);
+  --lg-glass-surface: rgba(255, 255, 255, 0.06);
+  --lg-glass-surface-strong: rgba(255, 255, 255, 0.10);
+  --lg-glass-surface-modal: rgba(16, 24, 38, 0.96);
+  --lg-glass-border: rgba(255, 255, 255, 0.10);
+  --lg-glass-border-strong: rgba(255, 255, 255, 0.18);
+  --lg-glass-shadow: 0 2px 10px rgba(0, 0, 0, 0.30);
+  --lg-glass-shadow-lg: 0 12px 44px rgba(0, 0, 0, 0.42);
+  --lg-glass-inset: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  --lg-glass-inset-strong: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  --lg-content-bg: rgba(17, 25, 38, 0.88);
 
-  --vp-c-brand-1: #6db2ff;
-  --vp-c-brand-2: #8cc4ff;
-  --vp-c-brand-3: #4f9de8;
-  --vp-c-brand-soft: rgba(109, 178, 255, 0.18);
+  --vp-c-brand-1: #7b93ff;
+  --vp-c-brand-2: #93a6ff;
+  --vp-c-brand-3: #5f7bff;
+  --vp-c-brand-soft: rgba(123, 147, 255, 0.16);
+
+  --vp-c-text-1: #e2e8f2;
+  --vp-c-text-2: #9aa5b8;
+  --vp-c-text-3: #6d7889;
+
+  --vp-c-divider: rgba(255, 255, 255, 0.09);
+  --vp-c-border: rgba(255, 255, 255, 0.14);
+  --vp-c-gutter: rgba(255, 255, 255, 0.09);
 }
 
-/* VitePress 的内容底色改成半透明，让背景光场透上来 */
+/* 让背景透上来 */
 :root {
   --vp-c-bg: transparent;
   --vp-c-bg-alt: transparent;
@@ -162,14 +172,9 @@ html.dark {
 }
 
 /* ============================================================
-   3. 复用材质配方的工具类
+   4. 工具类
    ============================================================ */
 
-/**
- * 玻璃材质。
- * 参数与 packages/web 里的组件一致：半透明底 + 背景模糊饱和 + 渐变高光边
- * + 内外阴影 + 统一左上光源。
- */
 .lg-glass {
   position: relative;
   isolation: isolate;
@@ -178,33 +183,9 @@ html.dark {
   -webkit-backdrop-filter: blur(var(--lg-glass-blur)) saturate(var(--lg-glass-sat));
   border: 1px solid var(--lg-glass-border);
   box-shadow: var(--lg-glass-shadow), var(--lg-glass-inset);
-  border-radius: 18px;
+  border-radius: 20px;
 }
 
-/* 边缘高光：渐变而非实心边框（实心白边框是廉价玻璃感的主要来源） */
-.lg-glass::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  pointer-events: none;
-  background: linear-gradient(
-    var(--lg-doc-light-angle),
-    transparent 0%,
-    var(--lg-glass-border-strong) 42%,
-    transparent 72%
-  );
-  opacity: 0.55;
-  mix-blend-mode: screen;
-  z-index: 1;
-}
-
-.lg-glass > * {
-  position: relative;
-  z-index: 2;
-}
-
-/* 更实的玻璃（浮层、下拉菜单、搜索面板） */
 .lg-glass--strong {
   background: var(--lg-glass-surface-strong);
   backdrop-filter: blur(var(--lg-glass-blur-strong)) saturate(var(--lg-glass-sat-strong));
@@ -214,221 +195,327 @@ html.dark {
 }
 
 /* ============================================================
-   4. 顶部导航栏玻璃化
+   5. 顶部导航 —— 浮动胶囊（参照 DeepSeek）
    ============================================================ */
 
-.VPNav .VPNavBar {
-  background: var(--lg-glass-surface) !important;
-  backdrop-filter: blur(var(--lg-glass-blur-strong)) saturate(var(--lg-glass-sat-strong));
-  -webkit-backdrop-filter: blur(var(--lg-glass-blur-strong)) saturate(var(--lg-glass-sat-strong));
-  border-bottom: 1px solid var(--lg-glass-border);
-  box-shadow: 0 2px 18px rgba(45, 65, 88, 0.08);
-}
-
-.dark .VPNav .VPNavBar {
-  box-shadow: 0 2px 18px rgba(0, 0, 0, 0.35);
-}
-
-/* 顶栏的细高光条 */
-.VPNav .VPNavBar::after {
-  content: "";
-  position: absolute;
-  left: 8%;
-  right: 8%;
-  bottom: -1px;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, var(--lg-glass-border-strong), transparent);
-  pointer-events: none;
-}
-
-.VPNav .VPNavBarTitle .title {
-  border-bottom: none !important;
-  font-weight: 700;
-  letter-spacing: 0.2px;
-}
-
-/* 顶栏菜单项：悬停时给一块小玻璃 */
-.VPNav .VPNavBarMenuLink:hover,
-.VPNav .VPNavBarMenuLink.active {
-  background: var(--lg-glass-surface-strong);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-radius: 999px;
-}
-
-.VPNav .VPNavBarMenuLink {
-  border-radius: 999px;
-  padding: 0 14px;
-  transition: background 0.25s ease;
-}
-
-/* 顶栏右侧的分隔线去掉（玻璃里不该有硬线） */
-.VPNav .VPNavBar .divider,
-.VPNav .VPNavBar .divider-line {
+.VPNav {
   background: transparent !important;
 }
 
-/* 本地搜索框 */
+.VPNav .VPNavBar {
+  width: min(1120px, calc(100% - 40px)) !important;
+  margin: 14px auto 0 !important;
+  height: 52px !important;
+  border-radius: 9999px !important;
+  background: rgba(255, 255, 255, 0.78) !important;
+  backdrop-filter: blur(24px) saturate(160%) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(160%) !important;
+  border: 1px solid var(--ds-border) !important;
+  box-shadow: var(--ds-shadow-md) !important;
+}
+
+html.dark .VPNav .VPNavBar {
+  background: rgba(20, 28, 44, 0.72) !important;
+  border-color: rgba(255, 255, 255, 0.10) !important;
+}
+
+/* 胶囊里不要分割线与底部高光（DeepSeek 没有） */
+.VPNav .VPNavBar .divider,
+.VPNav .VPNavBar .divider-line {
+  display: none !important;
+}
+
+.VPNav .VPNavBar::after {
+  display: none !important;
+}
+
+.VPNav .VPNavBar .wrapper,
+.VPNav .VPNavBar .container,
+.VPNav .VPNavBar .title,
+.VPNav .VPNavBar .VPNavBarTitle,
+.VPNav .VPNavBar .content,
+.VPNav .VPNavBar .content-body {
+  height: 52px !important;
+}
+
+.VPNav .VPNavBar .container {
+  max-width: none !important;
+  padding: 0 10px 0 20px !important;
+}
+
+.VPNav .VPNavBar .title,
+.VPNav .VPNavBar .VPNavBarTitle {
+  padding: 0 !important;
+  border-bottom: none !important;
+}
+
+.VPNav .VPNavBar .VPNavBarTitle .title {
+  border-bottom: none !important;
+  font-weight: 600;
+  font-size: 16px;
+  color: var(--ds-text);
+  letter-spacing: -0.01em;
+}
+
+html.dark .VPNav .VPNavBar .VPNavBarTitle .title {
+  color: #e2e8f2;
+}
+
+/* 菜单项：DeepSeek 是很朴素的文字链接，悬停才给淡底 */
+.VPNav .VPNavBarMenuLink {
+  border-radius: 9999px !important;
+  padding: 0 14px !important;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ds-text-muted) !important;
+  transition: color 0.2s ease, background 0.2s ease;
+}
+
+.VPNav .VPNavBarMenuLink:hover {
+  color: var(--ds-text) !important;
+  background: rgba(43, 52, 69, 0.05) !important;
+  backdrop-filter: none !important;
+}
+
+.VPNav .VPNavBarMenuLink.active {
+  color: var(--ds-blue) !important;
+  background: transparent !important;
+}
+
+html.dark .VPNav .VPNavBarMenuLink {
+  color: var(--vp-c-text-2) !important;
+}
+
+html.dark .VPNav .VPNavBarMenuLink:hover {
+  color: var(--vp-c-text-1) !important;
+  background: rgba(255, 255, 255, 0.06) !important;
+}
+
+/* 搜索框：胶囊内嵌控件，浅灰底无边框 */
 .VPNav .DocSearch-Button,
 .VPNav .VPNavBarSearchButton {
-  background: var(--lg-glass-surface-strong) !important;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid var(--lg-glass-border) !important;
-  border-radius: 999px !important;
-  box-shadow: var(--lg-glass-inset);
+  background: rgba(43, 52, 69, 0.045) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: none !important;
+  border-radius: 9999px !important;
+  box-shadow: none !important;
+  height: 34px !important;
+  padding: 0 12px !important;
 }
 
 .VPNav .DocSearch-Button:hover {
-  border-color: var(--lg-glass-border-strong) !important;
+  background: rgba(43, 52, 69, 0.075) !important;
+  border: none !important;
+}
+
+html.dark .VPNav .DocSearch-Button,
+html.dark .VPNav .VPNavBarSearchButton {
+  background: rgba(255, 255, 255, 0.07) !important;
+}
+
+html.dark .VPNav .DocSearch-Button:hover {
+  background: rgba(255, 255, 255, 0.11) !important;
+}
+
+.VPNav .VPSwitch,
+.VPNav .VPSocialLink {
+  border-radius: 9999px !important;
+}
+
+.VPNav .VPSocialLink:hover {
+  background: rgba(43, 52, 69, 0.05) !important;
+}
+
+/* 有侧栏时同样保持胶囊 */
+.VPNav.has-sidebar .VPNavBar,
+.VPNav .VPNavBar.has-sidebar {
+  background: rgba(255, 255, 255, 0.78) !important;
+  border: 1px solid var(--ds-border) !important;
+}
+
+html.dark .VPNav .VPNavBar.has-sidebar {
+  background: rgba(20, 28, 44, 0.72) !important;
+  border-color: rgba(255, 255, 255, 0.10) !important;
+}
+
+/* 浮动胶囊的占位。
+   ⚠️ 不要用 --vp-layout-top-height 来控制占位 —— 它同时也决定导航自身的
+   top 位置，调大会把胶囊一起往下推（实测：设 100px 时胶囊跑到 y=114，
+   反而压住 hero）。导航高度保持 52px，占位改由下方给内容区加 margin 实现。 */
+:root {
+  --vp-nav-height: 52px;
 }
 
 /* ============================================================
-   5. 侧边栏玻璃化
+   6. 侧边栏
    ============================================================ */
 
+/* 侧栏顶部要避开浮动胶囊（VitePress 默认按通栏导航的 52px 算，
+   但胶囊还多出 14px 上边距 + 边框）。 */
 .VPSidebar {
-  background: var(--lg-glass-surface) !important;
-  backdrop-filter: blur(var(--lg-glass-blur-strong)) saturate(var(--lg-glass-sat));
-  -webkit-backdrop-filter: blur(var(--lg-glass-blur-strong)) saturate(var(--lg-glass-sat));
-  border-right: 1px solid var(--lg-glass-border);
+  background: transparent !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border-right: none !important;
+  padding-top: 82px !important;
 }
 
-/* 侧边栏选中项：一块小玻璃 + 左侧高光条 */
-.VPSidebarItem.is-active > .item > .link > .text,
-.VPSidebarItem.is-active > .item .text {
-  color: var(--vp-c-brand-1) !important;
+.VPSidebar .curtain {
+  display: none !important;
+}
+
+.VPSidebarItem .text {
+  font-size: 14px;
+  color: var(--ds-text-muted);
+}
+
+.VPSidebarItem.level-0 > .item > .text {
+  font-size: 12px;
   font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ds-text-faint);
 }
 
-.VPSidebarItem.level-1.is-active > .item {
-  background: var(--lg-glass-surface-strong);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border-radius: 10px;
-  box-shadow: var(--lg-glass-inset);
+.VPSidebarItem .VPSidebarItem .item {
+  border-radius: 8px;
+  transition: background 0.18s ease;
 }
 
 .VPSidebarItem .VPSidebarItem .item:hover {
-  background: var(--lg-glass-surface);
+  background: rgba(43, 52, 69, 0.045);
+}
+
+.VPSidebarItem.is-active > .item > .link > .text,
+.VPSidebarItem.is-active > .item .text {
+  color: var(--ds-blue) !important;
+  font-weight: 600;
+}
+
+.VPSidebarItem.level-1.is-active > .item,
+.VPSidebarItem.level-2.is-active > .item {
+  background: var(--ds-blue-soft);
   border-radius: 8px;
-  transition: background 0.2s ease;
+  box-shadow: none;
+}
+
+html.dark .VPSidebarItem .VPSidebarItem .item:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+html.dark .VPSidebarItem.level-1.is-active > .item,
+html.dark .VPSidebarItem.level-2.is-active > .item {
+  background: rgba(123, 147, 255, 0.14);
 }
 
 /* ============================================================
-   6. 正文区 —— 需要更实的底，正文可读性优先
+   7. 正文区 —— 白卡片（DeepSeek 的卡片是白底 + 发丝边框）
    ============================================================ */
 
-.VPContent .VPDoc .container .content {
-  position: relative;
-}
-
-/* 给正文铺一层"更实的玻璃"：透明度远低于导航，
-   因为这里是长文本，压在高对比背景上会读不清 */
-.VPDoc .content-container {
-  position: relative;
-}
-
-.VPDoc .main {
-  position: relative;
-}
-
-/* 正文容器本身做成一块大玻璃 */
 .VPDoc .vp-doc {
   position: relative;
   background: var(--lg-content-bg);
-  backdrop-filter: blur(30px) saturate(120%);
-  -webkit-backdrop-filter: blur(30px) saturate(120%);
-  border: 1px solid var(--lg-glass-border);
-  border-radius: 22px;
-  box-shadow: var(--lg-glass-shadow-lg), var(--lg-glass-inset);
-  padding: 32px 36px;
-  margin-top: 24px;
+  backdrop-filter: blur(24px) saturate(120%);
+  -webkit-backdrop-filter: blur(24px) saturate(120%);
+  border: 1px solid var(--ds-border);
+  border-radius: 24px;
+  box-shadow: var(--ds-shadow-md);
+  padding: 34px 38px;
+  margin-top: 22px;
 }
 
-/* 顶部高光带（大面板的做法） */
+html.dark .VPDoc .vp-doc {
+  border-color: rgba(255, 255, 255, 0.09);
+}
+
+/* DeepSeek 的卡片没有顶部高光带 —— 去掉 */
 .VPDoc .vp-doc::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 42%;
-  border-radius: 22px 22px 0 0;
-  pointer-events: none;
-  background: linear-gradient(
-    112deg,
-    rgba(255, 255, 255, 0.30),
-    rgba(255, 255, 255, 0.06) 28%,
-    transparent 62%
-  );
+  display: none !important;
 }
 
-.dark .VPDoc .vp-doc::before {
-  background: linear-gradient(
-    112deg,
-    rgba(255, 255, 255, 0.07),
-    rgba(255, 255, 255, 0.02) 28%,
-    transparent 62%
-  );
+.vp-doc h1 {
+  color: var(--ds-text);
+  font-weight: 600;
+  letter-spacing: -0.02em;
 }
 
-/* 右侧目录（outline）也玻璃化 */
+.vp-doc h2 {
+  color: var(--ds-text);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  border-top: 1px solid var(--ds-border);
+}
+
+html.dark .vp-doc h1,
+html.dark .vp-doc h2 {
+  color: var(--vp-c-text-1);
+}
+
+html.dark .vp-doc h2 {
+  border-top-color: rgba(255, 255, 255, 0.08);
+}
+
 .VPDoc .aside .VPDocOutlineItem a {
-  border-radius: 8px;
+  border-radius: 6px;
   padding: 2px 8px;
-  transition: background 0.2s ease;
+  font-size: 13px;
+  color: var(--ds-text-faint);
+  transition: color 0.18s ease, background 0.18s ease;
 }
 
 .VPDoc .aside .VPDocOutlineItem a:hover,
 .VPDoc .aside .VPDocOutlineItem a.active {
-  background: var(--lg-glass-surface-strong);
+  background: transparent;
+  color: var(--ds-blue);
 }
 
 /* ============================================================
-   7. 代码块玻璃化
+   8. 代码块 —— 浅灰底、无边框玻璃、圆角
    ============================================================ */
 
 .vp-doc div[class*='language-'] {
-  background: var(--lg-glass-surface-strong);
-  backdrop-filter: blur(20px) saturate(130%);
-  -webkit-backdrop-filter: blur(20px) saturate(130%);
-  border: 1px solid var(--lg-glass-border);
+  background: rgba(43, 52, 69, 0.035);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border: 1px solid var(--ds-border);
   border-radius: 14px;
-  box-shadow: var(--lg-glass-shadow), var(--lg-glass-inset);
+  box-shadow: none;
   position: relative;
 }
 
 .vp-doc div[class*='language-']::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 10%;
-  right: 10%;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, var(--lg-glass-border-strong), transparent);
-  pointer-events: none;
+  display: none !important;
 }
 
 .vp-doc div[class*='language-'] pre {
   background: transparent !important;
 }
 
-/* 行内代码 */
-.vp-doc :not(pre) > code {
-  background: var(--lg-glass-surface-strong);
-  border: 1px solid var(--lg-glass-border);
-  border-radius: 6px;
-  box-shadow: var(--lg-glass-inset);
+html.dark .vp-doc div[class*='language-'] {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.08);
 }
 
-/* 代码块的语言标签 */
-.vp-doc div[class*='language-'] > span.lang {
-  color: var(--vp-c-text-3);
+/* 行内代码：用更深的蓝，保证在正文小字号下对比度足够
+   （品牌蓝 #4d6bfe 对白底约 3.9:1，做正文小字偏浅）。 */
+.vp-doc :not(pre) > code {
+  background: rgba(77, 107, 254, 0.08);
+  border: none;
+  border-radius: 5px;
+  box-shadow: none;
+  color: #2f4ad0;
+  font-weight: 500;
+  padding: 2px 6px;
+}
+
+html.dark .vp-doc :not(pre) > code {
+  background: rgba(123, 147, 255, 0.14);
+  color: #a8baff;
 }
 
 /* ============================================================
-   8. 表格玻璃化（API 表格是文档站的主体内容）
+   9. 表格 —— 白底 + 发丝分隔
    ============================================================ */
 
 .vp-doc table {
@@ -436,13 +523,13 @@ html.dark {
   width: 100%;
   border-collapse: separate;
   border-spacing: 0;
-  background: var(--lg-glass-surface);
-  backdrop-filter: blur(16px) saturate(120%);
-  -webkit-backdrop-filter: blur(16px) saturate(120%);
-  border: 1px solid var(--lg-glass-border);
+  background: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border: 1px solid var(--ds-border);
   border-radius: 14px;
   overflow: hidden;
-  box-shadow: var(--lg-glass-shadow), var(--lg-glass-inset);
+  box-shadow: none;
 }
 
 .vp-doc tr {
@@ -451,174 +538,393 @@ html.dark {
 }
 
 .vp-doc th {
-  background: var(--lg-glass-surface-strong);
-  border-bottom: 1px solid var(--lg-glass-border);
+  background: rgba(43, 52, 69, 0.035);
+  border-bottom: 1px solid var(--ds-border);
   font-weight: 600;
+  color: var(--ds-text);
+  font-size: 13px;
 }
 
 .vp-doc th,
 .vp-doc td {
   border: none;
-  border-bottom: 1px solid var(--lg-glass-border);
-  padding: 10px 14px;
+  border-bottom: 1px solid var(--ds-border);
+  padding: 11px 14px;
 }
 
 .vp-doc tr:last-child td {
   border-bottom: none;
 }
 
-/* ============================================================
-   9. 自定义容器（tip / warning / danger）玻璃化
-   ============================================================ */
+html.dark .vp-doc table {
+  border-color: rgba(255, 255, 255, 0.09);
+}
 
-.vp-doc .custom-block {
-  background: var(--lg-glass-surface-strong);
-  backdrop-filter: blur(18px) saturate(125%);
-  -webkit-backdrop-filter: blur(18px) saturate(125%);
-  border: 1px solid var(--lg-glass-border);
-  border-left: 3px solid var(--vp-c-brand-1);
-  border-radius: 12px;
-  box-shadow: var(--lg-glass-shadow), var(--lg-glass-inset);
+html.dark .vp-doc th {
+  background: rgba(255, 255, 255, 0.04);
+  border-bottom-color: rgba(255, 255, 255, 0.09);
+  color: var(--vp-c-text-1);
+}
+
+html.dark .vp-doc th,
+html.dark .vp-doc td {
+  border-bottom-color: rgba(255, 255, 255, 0.07);
 }
 
 /* ============================================================
-   10. 首页 hero —— 液态玻璃的展示面
+   10. 提示容器
    ============================================================ */
 
+.vp-doc .custom-block {
+  background: rgba(77, 107, 254, 0.055);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border: 1px solid rgba(77, 107, 254, 0.16);
+  border-left: 3px solid var(--ds-blue);
+  border-radius: 12px;
+  box-shadow: none;
+  font-size: 14px;
+}
+
+.vp-doc .custom-block.warning {
+  background: rgba(214, 148, 32, 0.07);
+  border-color: rgba(214, 148, 32, 0.22);
+  border-left-color: #d69420;
+}
+
+.vp-doc .custom-block.danger {
+  background: rgba(224, 74, 74, 0.07);
+  border-color: rgba(224, 74, 74, 0.22);
+  border-left-color: #e04a4a;
+}
+
+.vp-doc .custom-block-title {
+  font-weight: 600;
+}
+
+html.dark .vp-doc .custom-block {
+  background: rgba(123, 147, 255, 0.09);
+  border-color: rgba(123, 147, 255, 0.20);
+}
+
+/* ============================================================
+   11. 首页 —— 参照 DeepSeek 的居中 hero
+   ============================================================ */
+
+/* 浮动胶囊覆盖在内容之上，所以内容区要自己让开它的高度。
+   胶囊：margin-top 14 + 高 52 → 底部 y=66，再留 24px 呼吸 = 90px。 */
+.VPContent {
+  padding-top: 90px !important;
+}
+
+/* ⚠️ VitePress 给 hero 设了 margin-top: -52px（= 负的 --vp-nav-height），
+   用来抵消通栏导航的占位。但我们的胶囊是**浮动在内容之上**，
+   负边距会把 hero 拉回胶囊下面（实测标题被压到 y=24）。归零。 */
 .VPHome .VPHero {
-  position: relative;
+  margin-top: 0 !important;
+  padding: 8px 24px 40px !important;
+}
+
+.VPHome {
+  padding-bottom: 0 !important;
 }
 
 .VPHome .VPHero .container {
   position: relative;
   z-index: 2;
+  max-width: 960px;
+  text-align: center;
+}
+
+.VPHome .VPHero .main {
+  max-width: 960px;
+  margin: 0 auto;
+  text-align: center;
+  align-items: center;
 }
 
 .VPHome .VPHero .name,
 .VPHome .VPHero .text {
-  /* 标题加一点玻璃质感：微弱的内阴影让字像浮在玻璃上 */
-  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+  text-align: center;
+  text-shadow: none;
+  max-width: none;
+  /* flex 列布局下，宽度不同的两个标题块默认左边缘对齐，
+     视觉上像左对齐（短行的左边缘与长行重合、右边参差）。
+     让它们各自居中，视觉才是居中的。 */
+  align-self: center;
+  margin-left: auto !important;
+  margin-right: auto !important;
 }
 
-.dark .VPHome .VPHero .name,
-.dark .VPHome .VPHero .text {
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+/* 主标题：DeepSeek 用细字重 + 深蓝灰 + 收紧字距 */
+.VPHome .VPHero .name {
+  font-size: 56px !important;
+  line-height: 1.1 !important;
+  font-weight: 500 !important;
+  letter-spacing: -0.03em !important;
+  background: none !important;
+  -webkit-background-clip: initial !important;
+  background-clip: initial !important;
+  -webkit-text-fill-color: var(--ds-text) !important;
+  color: var(--ds-text) !important;
 }
 
-/* 首页按钮玻璃化 */
+html.dark .VPHome .VPHero .name {
+  -webkit-text-fill-color: var(--vp-c-text-1) !important;
+  color: var(--vp-c-text-1) !important;
+}
+
+.VPHome .VPHero .text {
+  font-size: 56px !important;
+  line-height: 1.1 !important;
+  font-weight: 500 !important;
+  letter-spacing: -0.03em !important;
+  color: var(--ds-text) !important;
+  margin-top: 4px !important;
+}
+
+html.dark .VPHome .VPHero .text {
+  color: var(--vp-c-text-1) !important;
+}
+
+.VPHome .VPHero .tagline {
+  margin: 20px auto 0 !important;
+  max-width: 640px;
+  font-size: 16px !important;
+  line-height: 1.7 !important;
+  color: var(--ds-text-muted) !important;
+  text-align: center;
+}
+
+/* 按钮：主按钮实心品牌蓝，次按钮白底发丝边框 */
+.VPHome .VPHero .actions {
+  justify-content: center;
+  padding-top: 30px !important;
+}
+
 .VPButton.brand {
-  background: var(--lg-glass-surface-strong) !important;
-  backdrop-filter: blur(20px) saturate(150%);
-  -webkit-backdrop-filter: blur(20px) saturate(150%);
-  border: 1px solid var(--lg-glass-border-strong) !important;
-  color: var(--vp-c-brand-1) !important;
-  box-shadow: var(--lg-glass-shadow), var(--lg-glass-inset);
-  border-radius: 999px;
+  background: var(--ds-blue) !important;
+  border: 1px solid var(--ds-blue) !important;
+  color: #fff !important;
+  border-radius: 9999px !important;
+  box-shadow: 0 4px 14px rgba(77, 107, 254, 0.28) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  font-weight: 500;
+  padding: 0 26px !important;
+  transition: background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .VPButton.brand:hover {
-  border-color: var(--vp-c-brand-1) !important;
+  background: var(--ds-blue-hover) !important;
+  border-color: var(--ds-blue-hover) !important;
   transform: translateY(-1px);
-  transition: transform 0.25s ease;
+  box-shadow: 0 6px 20px rgba(77, 107, 254, 0.34) !important;
 }
 
 .VPButton.alt {
-  background: var(--lg-glass-surface) !important;
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid var(--lg-glass-border) !important;
-  border-radius: 999px;
-  box-shadow: var(--lg-glass-inset);
+  background: #ffffff !important;
+  border: 1px solid var(--ds-border-strong) !important;
+  color: var(--ds-text) !important;
+  border-radius: 9999px !important;
+  box-shadow: var(--ds-shadow-sm) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  font-weight: 500;
+  padding: 0 26px !important;
 }
 
-/* 首页特性卡片玻璃化 */
+.VPButton.alt:hover {
+  background: #fff !important;
+  border-color: var(--ds-blue) !important;
+  color: var(--ds-blue) !important;
+}
+
+html.dark .VPButton.alt {
+  background: rgba(255, 255, 255, 0.07) !important;
+  border-color: rgba(255, 255, 255, 0.14) !important;
+  color: var(--vp-c-text-1) !important;
+}
+
+/* 特性卡片：白底、大圆角、发丝边框、很淡的阴影 */
 .VPFeature {
-  background: var(--lg-glass-surface) !important;
-  backdrop-filter: blur(22px) saturate(130%);
-  -webkit-backdrop-filter: blur(22px) saturate(130%);
-  border: 1px solid var(--lg-glass-border) !important;
-  border-radius: 18px !important;
-  box-shadow: var(--lg-glass-shadow), var(--lg-glass-inset);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  background: rgba(255, 255, 255, 0.90) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border: 1px solid var(--ds-border) !important;
+  border-radius: 20px !important;
+  box-shadow: var(--ds-shadow-sm) !important;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+  padding: 26px !important;
 }
 
 .VPFeature:hover {
   transform: translateY(-2px);
-  box-shadow: var(--lg-glass-shadow-lg), var(--lg-glass-inset-strong);
+  border-color: var(--ds-border-strong) !important;
+  box-shadow: var(--ds-shadow-lg) !important;
+}
+
+.VPFeature .title {
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  color: var(--ds-text) !important;
+}
+
+.VPFeature .details {
+  font-size: 14px !important;
+  line-height: 1.65 !important;
+  color: var(--ds-text-muted) !important;
+}
+
+.VPFeature .icon {
+  background: var(--ds-blue-soft) !important;
+  border-radius: 10px;
+  color: var(--ds-blue) !important;
+}
+
+html.dark .VPFeature {
+  background: rgba(255, 255, 255, 0.045) !important;
+  border-color: rgba(255, 255, 255, 0.09) !important;
+}
+
+html.dark .VPFeature .title {
+  color: var(--vp-c-text-1) !important;
+}
+
+html.dark .VPFeature .details {
+  color: var(--vp-c-text-2) !important;
+}
+
+.VPHome .VPFeatures {
+  padding: 0 24px 72px !important;
+}
+
+/* 卡片宽度：4 列在 1120px 容器里每张只有 268px，中文换行参差。
+   放宽容器 + 限制卡片数，让每张有足够宽度。 */
+.VPHome .VPFeatures .container {
+  max-width: 1200px;
+}
+
+.VPFeature {
+  min-width: 0;
+}
+
+.VPFeature .details {
+  /* 避免中文在窄列里被拆得过碎 */
+  word-break: normal;
+  overflow-wrap: anywhere;
+  hyphens: none;
+}
+
+/* 首页底部补一段内容，避免页脚前留白过多（当前文档高度仅一屏） */
+.VPHome::after {
+  content: "";
+  display: block;
+  height: 40px;
 }
 
 /* ============================================================
-   11. 其它细节
+   12. 页脚 / 分页 / 搜索
    ============================================================ */
 
-/* 页脚 */
 .VPFooter {
-  background: var(--lg-glass-surface) !important;
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-top: 1px solid var(--lg-glass-border) !important;
+  background: transparent !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border-top: 1px solid var(--ds-border) !important;
 }
 
-/* 上一页/下一页 */
+.VPFooter .message,
+.VPFooter .copyright {
+  color: var(--ds-text-faint) !important;
+  font-size: 13px;
+}
+
+html.dark .VPFooter {
+  border-top-color: rgba(255, 255, 255, 0.08) !important;
+}
+
 .VPDocFooter .pager-link {
-  background: var(--lg-glass-surface) !important;
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid var(--lg-glass-border) !important;
+  background: rgba(255, 255, 255, 0.90) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: 1px solid var(--ds-border) !important;
   border-radius: 14px !important;
-  box-shadow: var(--lg-glass-inset);
+  box-shadow: var(--ds-shadow-sm) !important;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .VPDocFooter .pager-link:hover {
-  border-color: var(--vp-c-brand-1) !important;
+  border-color: var(--ds-blue) !important;
+  box-shadow: var(--ds-shadow-md) !important;
 }
 
-/* 本地搜索的弹出面板 */
+.VPDocFooter .pager-link .title {
+  color: var(--ds-text) !important;
+  font-weight: 500;
+}
+
+html.dark .VPDocFooter .pager-link {
+  background: rgba(255, 255, 255, 0.045) !important;
+  border-color: rgba(255, 255, 255, 0.09) !important;
+}
+
 .VPLocalSearchBox .shell {
   background: var(--lg-glass-surface-modal) !important;
-  backdrop-filter: blur(34px) saturate(150%);
-  -webkit-backdrop-filter: blur(34px) saturate(150%);
-  border: 1px solid var(--lg-glass-border-strong) !important;
-  box-shadow: var(--lg-glass-shadow-lg), var(--lg-glass-inset-strong);
-  border-radius: 18px;
+  backdrop-filter: blur(28px) saturate(160%) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(160%) !important;
+  border: 1px solid var(--ds-border-strong) !important;
+  box-shadow: var(--ds-shadow-lg) !important;
+  border-radius: 18px !important;
 }
 
 .VPLocalSearchBox .search-bar {
-  border-bottom: 1px solid var(--lg-glass-border) !important;
+  border: 1px solid var(--ds-border) !important;
+  border-radius: 10px !important;
 }
 
-/* 移动端侧边栏抽屉 */
 .VPNavScreen {
-  background: var(--lg-glass-surface-modal) !important;
-  backdrop-filter: blur(34px) saturate(150%);
-  -webkit-backdrop-filter: blur(34px) saturate(150%);
+  background: rgba(255, 255, 255, 0.97) !important;
+  backdrop-filter: blur(28px) !important;
+  -webkit-backdrop-filter: blur(28px) !important;
 }
 
-/* 降级：不支持 backdrop-filter 时用更实的底，保证可读性 */
+html.dark .VPNavScreen {
+  background: rgba(16, 24, 38, 0.97) !important;
+}
+
+/* ============================================================
+   13. 降级 / 动效偏好 / 窄屏
+   ============================================================ */
+
 @supports not (backdrop-filter: blur(1px)) {
   .VPNav .VPNavBar,
-  .VPSidebar,
   .VPDoc .vp-doc,
-  .vp-doc table,
-  .VPFeature,
-  .vp-doc div[class*='language-'] {
-    background: rgba(255, 255, 255, 0.94) !important;
+  .VPFeature {
+    background: rgba(255, 255, 255, 0.97) !important;
   }
   html.dark .VPNav .VPNavBar,
-  html.dark .VPSidebar,
   html.dark .VPDoc .vp-doc,
-  html.dark .vp-doc table,
-  html.dark .VPFeature,
-  html.dark .vp-doc div[class*='language-'] {
-    background: rgba(22, 30, 40, 0.96) !important;
+  html.dark .VPFeature {
+    background: rgba(18, 26, 40, 0.97) !important;
   }
 }
 
-/* 尊重降低动效偏好 */
 @media (prefers-reduced-motion: reduce) {
   .VPFeature,
   .VPButton,
   .VPSidebarItem .item {
     transition: none !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .VPNav .VPNavBar {
+    width: calc(100% - 24px) !important;
+    margin-top: 10px !important;
+  }
+  .VPHome .VPHero .name,
+  .VPHome .VPHero .text {
+    font-size: 36px !important;
   }
 }
