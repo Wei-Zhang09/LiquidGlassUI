@@ -10,12 +10,15 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
@@ -43,18 +46,29 @@ import com.weizhang09.liquidglass.GlassGroup
 import com.weizhang09.liquidglass.GlassLevel
 import com.weizhang09.liquidglass.GlassMenu
 import com.weizhang09.liquidglass.GlassMenuItem
+import com.weizhang09.liquidglass.GlassSidebar
+import com.weizhang09.liquidglass.GlassSidebarItem
 import com.weizhang09.liquidglass.GlassSurface
 import com.weizhang09.liquidglass.GlassTabItem
-import com.weizhang09.liquidglass.RectShape
 import com.weizhang09.liquidglass.GlassTooltip
+import com.weizhang09.liquidglass.RectShape
 import com.weizhang09.liquidglass.tokens.GlassRadiusTokens
 
 /**
  * Android 示例 —— 移动端形态。
  *
- * 与桌面端共用 commonMain 的组件；这里展示**移动端导向**的两个：
- *  - GlassBottomBar：底部标签栏（触屏用按压反馈，无 hover）
- *  - GlassDialog：底部抽屉式对话框（拇指可达，键盘弹出不遮挡）
+ * ⚠️ 必须是**可滚动分区列表**。
+ * 原来是一个居中固定 Column，组件一多就超出屏幕（1080×2400 也放不下），
+ * 下面的组件根本看不到 —— 等于没有示例。
+ *
+ * 分区：
+ *  ① 边缘折射（材质底板）
+ *  ② 材质层级（plain / regular / elevated / focused）
+ *  ③ 桌面组件在触屏上的表现（Menu 点击 / Tooltip 长按）
+ *  ④ GlassGroup SDF 融合
+ *  ⑤ 侧边导航（桌面形态，移动端可复用）
+ *  ⑥ 移动专属（BottomBar / Dialog）
+ *  ⑦ 交互状态
  */
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -79,6 +93,7 @@ private fun AndroidShowcase() {
     var dialogVisible by remember { mutableStateOf(false) }
     var menuOpen by remember { mutableStateOf(false) }
     var tipClicks by remember { mutableStateOf(0) }
+    var selectedSidebar by remember { mutableStateOf("a") }
 
     // Android 返回键关闭对话框 —— 移动端必备
     BackHandler(enabled = dialogVisible) { dialogVisible = false }
@@ -100,120 +115,120 @@ private fun AndroidShowcase() {
             Stripes()
         }
 
-        Column(
-            modifier = Modifier.align(Alignment.Center).padding(24.dp),
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(top = 56.dp, bottom = 96.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(20.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            contentPadding = PaddingValues(horizontal = 20.dp),
         ) {
-            Text(
-                "LiquidGlassUI",
-                fontSize = 26.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = Color(0xFF1B2733),
-            )
-            Text(
-                "Android · 与桌面共用同一套组件",
-                fontSize = 13.sp,
-                color = Color(0xFF48586A),
-            )
-
-            GlassSurface(
-                backdrop = backdrop,
-                modifier = Modifier.width(280.dp).height(120.dp),
-                shape = RoundedCornerShape(GlassRadiusTokens.lg),
-                level = GlassLevel.Elevated,
-            ) {
+            // ── 标题 ──────────────────────────────────────────
+            item {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
-                        "边缘折射",
-                        fontSize = 16.sp,
+                        "LiquidGlassUI",
+                        fontSize = 26.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = Color(0xFF1B2733),
                     )
                     Text(
-                        "AGSL 运行时着色器（API 33+）",
-                        fontSize = 11.sp,
+                        "Android · 与桌面共用同一套组件",
+                        fontSize = 13.sp,
                         color = Color(0xFF48586A),
                     )
                 }
             }
 
-            // 桌面组件在移动端的表现 —— 验证架构假设：
-            // 点击驱动的 GlassMenu 能优雅降级（见下方）；
-            // 依赖 hover 的 GlassTooltip 已补长按触发（见下方）。
-            Box(
-                Modifier
-                    .width(180.dp)
-                    .height(48.dp)
-                    .clickable { menuOpen = true }
-            ) {
+            // ── ① 边缘折射 ────────────────────────────────────
+            item { SectionTitle("① 边缘折射 · GlassSurface") }
+            item {
                 GlassSurface(
                     backdrop = backdrop,
-                    modifier = Modifier.fillMaxSize(),
-                    shape = CircleShape,
-                    level = GlassLevel.Regular,
+                    modifier = Modifier.width(280.dp).height(110.dp),
+                    shape = RoundedCornerShape(GlassRadiusTokens.lg),
+                    level = GlassLevel.Elevated,
                 ) {
-                    Text("桌面组件 GlassMenu", fontSize = 12.sp, color = Color(0xFF1B2733))
-                }
-            }
-
-            // GlassTooltip 长按 —— 触屏上 hover 的替代语义。
-            // 长按按钮应弹出提示；短按则照常触发按钮自身动作。
-            GlassTooltip(
-                text = "长按提示：触屏没有 hover，用长按替代",
-                backdrop = backdrop,
-                showDelayMillis = 0,
-            ) {
-                Box(
-                    Modifier
-                        .width(180.dp)
-                        .height(48.dp)
-                        .clickable { tipClicks++ }
-                ) {
-                    GlassSurface(
-                        backdrop = backdrop,
-                        modifier = Modifier.fillMaxSize(),
-                        shape = CircleShape,
-                        level = GlassLevel.Regular,
-                    ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(
-                            "长按我看提示",
-                            fontSize = 12.sp,
+                            "边缘折射",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.SemiBold,
                             color = Color(0xFF1B2733),
+                        )
+                        Text(
+                            "AGSL 运行时着色器（API 33+）",
+                            fontSize = 11.sp,
+                            color = Color(0xFF48586A),
                         )
                     }
                 }
             }
 
-            // 触发底部抽屉对话框
-            Box(
-                Modifier
-                    .width(180.dp)
-                    .height(48.dp)
-                    .clickable { dialogVisible = true }
-            ) {
-                GlassSurface(
-                    backdrop = backdrop,
-                    modifier = Modifier.fillMaxSize(),
-                    shape = CircleShape,
-                    level = GlassLevel.Focused,
-                ) {
-                    Text("打开对话框", fontSize = 14.sp, color = Color(0xFF1B2733))
+            // ── ② 材质层级 ────────────────────────────────────
+            item { SectionTitle("② 材质层级 · level") }
+            item {
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    listOf(
+                        GlassLevel.Plain to "plain",
+                        GlassLevel.Regular to "regular",
+                        GlassLevel.Elevated to "elevated",
+                        GlassLevel.Focused to "focused",
+                    ).forEach { (lvl, name) ->
+                        GlassSurface(
+                            backdrop = backdrop,
+                            modifier = Modifier.width(72.dp).height(44.dp),
+                            shape = CircleShape,
+                            level = lvl,
+                        ) {
+                            Text(name, fontSize = 10.sp, color = Color(0xFF1B2733))
+                        }
+                    }
                 }
             }
-            // GlassGroup：SDF 融合。Android 走 Skia 运行时着色器（与桌面同路径），
-            // 但 AGSL 在 Android 上的支持情况与桌面不同 —— 这是本次真机验证的重点。
-            // 注意：这里不用绝对定位（align + padding），否则会叠在主内容列上。
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(6.dp),
-                modifier = Modifier.padding(top = 16.dp),
-            ) {
-                Text(
-                    "GlassGroup — 两个圆融合",
-                    fontSize = 11.sp,
-                    color = Color(0xFF1B2733),
-                )
+
+            // ── ③ 桌面组件在触屏上 ────────────────────────────
+            item { SectionTitle("③ 桌面组件 · 触屏降级") }
+            item {
+                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    // GlassMenu：点击驱动，触屏正常工作
+                    Box(
+                        Modifier.width(120.dp).height(44.dp).clickable { menuOpen = true }
+                    ) {
+                        GlassSurface(
+                            backdrop = backdrop,
+                            modifier = Modifier.fillMaxSize(),
+                            shape = CircleShape,
+                            level = GlassLevel.Regular,
+                        ) {
+                            Text("点开菜单", fontSize = 12.sp, color = Color(0xFF1B2733))
+                        }
+                    }
+                    // GlassTooltip：长按替代 hover
+                    GlassTooltip(
+                        text = "长按提示：触屏没有 hover，用长按替代",
+                        backdrop = backdrop,
+                        showDelayMillis = 0,
+                    ) {
+                        Box(
+                            Modifier.width(120.dp).height(44.dp).clickable { tipClicks++ }
+                        ) {
+                            GlassSurface(
+                                backdrop = backdrop,
+                                modifier = Modifier.fillMaxSize(),
+                                shape = CircleShape,
+                                level = GlassLevel.Regular,
+                            ) {
+                                Text("长按提示", fontSize = 12.sp, color = Color(0xFF1B2733))
+                            }
+                        }
+                    }
+                }
+            }
+
+            // ── ④ GlassGroup 融合 ─────────────────────────────
+            item { SectionTitle("④ SDF 融合 · GlassGroup") }
+            item {
                 Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         GlassGroup(
@@ -242,11 +257,64 @@ private fun AndroidShowcase() {
                 }
             }
 
+            // ── ⑤ 侧边导航（桌面形态，移动端可复用）───────────
+            item { SectionTitle("⑤ 侧边导航 · GlassSidebar") }
+            item {
+                Box(Modifier.width(220.dp).height(150.dp)) {
+                    GlassSidebar(
+                        backdrop = backdrop,
+                        items = listOf(
+                            GlassSidebarItem("a", "概览"),
+                            GlassSidebarItem("b", "组件"),
+                            GlassSidebarItem("c", "设置"),
+                        ),
+                        selectedId = selectedSidebar,
+                        onSelect = { selectedSidebar = it },
+                        width = 220.dp,
+                    )
+                }
+            }
+
+            // ── ⑥ 移动专属 ────────────────────────────────────
+            item { SectionTitle("⑥ 移动专属 · BottomBar / Dialog") }
+            item {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(
+                        "底部标签栏固定在屏幕底部；对话框从底部滑入",
+                        fontSize = 11.sp,
+                        color = Color(0xFF48586A),
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    Box(
+                        Modifier.width(160.dp).height(44.dp).clickable { dialogVisible = true }
+                    ) {
+                        GlassSurface(
+                            backdrop = backdrop,
+                            modifier = Modifier.fillMaxSize(),
+                            shape = CircleShape,
+                            level = GlassLevel.Focused,
+                        ) {
+                            Text("打开对话框", fontSize = 13.sp, color = Color(0xFF1B2733))
+                        }
+                    }
+                }
+            }
+
+            // ── ⑦ 交互状态 ────────────────────────────────────
+            item { SectionTitle("⑦ 交互状态 · 按压反馈") }
+            item {
+                Text(
+                    "长按次数 = $tipClicks   侧栏选中 = $selectedSidebar",
+                    fontSize = 11.sp,
+                    color = Color(0xFF48586A),
+                )
+            }
+
+            item { Spacer(Modifier.height(12.dp)) }
         }
 
-
         // 桌面组件 GlassMenu 在触屏上：点击驱动，能正常工作
-        Box(Modifier.align(Alignment.TopCenter).padding(top = 90.dp)) {
+        Box(Modifier.align(Alignment.TopCenter).padding(top = 10.dp)) {
             GlassMenu(
                 backdrop = backdrop,
                 items = listOf(
@@ -258,7 +326,7 @@ private fun AndroidShowcase() {
             ) { open, setOpen ->
                 if (open != menuOpen) menuOpen = open
                 Box(
-                    Modifier.width(160.dp).height(40.dp).clickable { setOpen(!open) }
+                    Modifier.width(150.dp).height(40.dp).clickable { setOpen(!open) }
                 ) {
                     GlassSurface(
                         backdrop = backdrop,
@@ -271,7 +339,6 @@ private fun AndroidShowcase() {
                 }
             }
         }
-
 
         // 底部标签栏（移动端主导航）
         GlassBottomBar(
@@ -297,6 +364,18 @@ private fun AndroidShowcase() {
             ),
         )
     }
+}
+
+/** 分区标题。 */
+@Composable
+private fun SectionTitle(text: String) {
+    Text(
+        text,
+        fontSize = 12.sp,
+        fontWeight = FontWeight.Medium,
+        color = Color(0xFF3C4C5E),
+        modifier = Modifier.padding(top = 10.dp),
+    )
 }
 
 /** 高对比竖条纹。 */

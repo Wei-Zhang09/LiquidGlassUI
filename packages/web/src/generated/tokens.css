@@ -8,23 +8,23 @@
   --lg-radius-full: 999px;
 
   --lg-blur-none: 0px;
-  --lg-blur-subtle: 8px;
-  --lg-blur-regular: 16px;
-  --lg-blur-heavy: 30px;
+  --lg-blur-subtle: 2px;
+  --lg-blur-regular: 4px;
+  --lg-blur-heavy: 12px;
 
-  --lg-bezel-width: 14px;
+  --lg-bezel-width: 22px;
   --lg-displacement-scale: 70;
-  --lg-ior: 1.5;
+  --lg-ior: 1.6;
   --lg-dispersion: 2.0;
-  --lg-saturation: 140%;
+  --lg-saturation: 180%;
   --lg-elasticity: 0.15;
   --lg-corner-smoothing: 0.6;
 
   --lg-light-angle: 45deg;
   --lg-highlight-width: 0.5px;
   --lg-highlight-alpha: 1.0;
-  --lg-specular-sharpness: 2.0;
-  --lg-specular-opacity: 0.45;
+  --lg-specular-sharpness: 3.0;
+  --lg-specular-opacity: 0.85;
 
   --lg-motion-fast: 150ms;
   --lg-motion-regular: 250ms;
@@ -35,10 +35,10 @@
 [data-lg-theme="light"] {
   --lg-tint: rgba(255, 255, 255, 0.15);
   --lg-tint-strong: rgba(255, 255, 255, 0.28);
-  --lg-highlight: rgba(255, 255, 255, 0.5);
+  --lg-highlight: rgba(255, 255, 255, 0.7);
   --lg-shadow: rgba(33, 48, 61, 0.18);
   --lg-inner-shadow: rgba(102, 128, 150, 0.1);
-  --lg-surface: rgba(255, 255, 255, 0.44);
+  --lg-surface: rgba(255, 255, 255, 0.12);
 }
 
 [data-lg-theme="dark"] {
@@ -47,5 +47,5 @@
   --lg-highlight: rgba(255, 255, 255, 0.38);
   --lg-shadow: rgba(0, 0, 0, 0.45);
   --lg-inner-shadow: rgba(0, 0, 0, 0.22);
-  --lg-surface: rgba(255, 255, 255, 0.1);
+  --lg-surface: rgba(255, 255, 255, 0.06);
 }

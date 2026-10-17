@@ -9,9 +9,9 @@
  * 滤镜按几何参数缓存，尺寸变化时才重新生成贴图。
  */
 
-import { buildDisplacementMap } from '../refraction.js'
+import { buildDisplacementMap, createSpecularMap } from '../refraction.js'
 import { createFusedDisplacementMap, type RectShape } from '../sdf.js'
-import { optical } from '../generated/tokens.js'
+import { optical, lighting } from '../generated/tokens.js'
 
 /**
  * 判断节点是否为 SVG 命名空间的 `<filter>`。
@@ -79,6 +79,22 @@ export function acquireFilter(req: FilterRequest): string | null {
   const { mapUrl, scale, bezelWidth } = buildDisplacementMap(w, h, radius, surface as never, overrides)
   if (!mapUrl || bezelWidth <= 1) return null
 
+  /**
+   * 独立的镜面高光贴图。
+   *
+   * ⚠️ 这是「液态玻璃」与「磨砂玻璃」的分界线之一。
+   * 只用 CSS inset shadow 做边缘高光，得到的是均匀一圈描边 ——
+   * 像塑料边框，不像玻璃。真实玻璃的高光只出现在迎光侧，
+   * 且强度随边缘法线连续变化。所以这里按像素算 dot(法线, 光向)。
+   */
+  const specUrl = createSpecularMap({
+    width: w,
+    height: h,
+    radius,
+    bezelWidth,
+    angleDeg: lighting.angle,
+  })
+
   const id = `lg-filter-${seq++}`
   const pad = 8 // 滤镜区域外扩，给模糊留余量
   const a = cfg.dispersion
@@ -127,7 +143,15 @@ export function acquireFilter(req: FilterRequest): string | null {
   <feColorMatrix in="DISP" type="saturate" values="${cfg.saturation / 100}" result="DISP_SAT"/>
 
   <feComposite in="DISP_SAT" in2="EDGE_MASK" operator="in" result="EDGE_ONLY"/>
-  <feComposite in="EDGE_ONLY" in2="BASE" operator="over"/>
+  <feComposite in="EDGE_ONLY" in2="BASE" operator="over" result="GLASS"/>
+
+  <!-- 镜面高光：独立贴图叠在最上层，只在迎光侧出现 -->
+  <feImage href="${specUrl}" x="0" y="0" width="${w}" height="${h}"
+           preserveAspectRatio="none" result="SPEC"/>
+  <feComponentTransfer in="SPEC" result="SPEC_FADED">
+    <feFuncA type="linear" slope="${lighting.specularOpacity}"/>
+  </feComponentTransfer>
+  <feBlend in="SPEC_FADED" in2="GLASS" mode="screen"/>
 </filter>`,
   )
 
@@ -194,7 +218,7 @@ export function registerFusedFilter(opts: {
   if (!mapUrl) return null
 
   const id = `lg-fused-${seq++}`
-  const scale = opts.maxDisp * 0.8
+  const scale = opts.maxDisp * 1.6
   const pad = 8
   const a = optical.dispersion
 

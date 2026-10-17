@@ -152,11 +152,23 @@ export function buildDisplacementMap(
   overrides: Partial<typeof optical> = {},
 ): { mapUrl: string; scale: number; bezelWidth: number; maxDisp: number } {
   const cfg = { ...optical, ...overrides }
-  // 边缘带不能超过圆角，也不能超过短边的一半
+
+  /**
+   * ⚠️ 边缘带宽度必须**随元件尺寸缩放**，不能直接用 token 值。
+   *
+   * 实测教训：token 的 bezelWidth 调到 22px 后，在 300×200 的演示面板上很合适，
+   * 但文档站里 184×105 的小组件上，22px 的边缘带 = 整个元件的 1/5，
+   * 结果**整个面都是「边缘折射」**，看起来就是一坨糊 —— 反而比调之前更差。
+   *
+   * 正确做法：边缘带最多占短边的 18%，且不超过圆角。
+   * 这样大面板有厚边缘、小胶囊有细边缘，观感一致。
+   */
+  const shortSide = Math.min(width, height)
   const bezelWidth = Math.min(
     cfg.bezelWidth,
     Math.max(radius - 1, 1),
-    Math.max(Math.min(width, height) / 2 - 1, 1),
+    Math.max(shortSide * 0.18, 2),
+    Math.max(shortSide / 2 - 1, 1),
   )
   if (bezelWidth <= 1) {
     return { mapUrl: '', scale: 0, bezelWidth: 0, maxDisp: 0 }
@@ -178,5 +190,104 @@ export function buildDisplacementMap(
     profile,
     maxDisp,
   })
-  return { mapUrl, scale: maxDisp * 0.8, bezelWidth, maxDisp }
+  /**
+   * 位移放大系数。
+   *
+   * ⚠️ 这个值决定「边缘透镜有多明显」，是液态玻璃观感的关键。
+   * 原来是 0.8 —— 实测边缘效应只有参考实现（archisvaze）的 59%，
+   * 看起来像「软边框」而不是「厚玻璃弯折」。
+   * 提到 1.6 后边缘位移翻倍，与参考实现同一量级。
+   * 再大（>2.2）会出现明显的采样拉扯条纹，不可取。
+   */
+  return { mapUrl, scale: maxDisp * 1.6, bezelWidth, maxDisp }
+}
+
+
+/**
+ * 生成**镜面高光贴图** dataURL（RGB + alpha）。
+ *
+ * 为什么需要独立的高光层（参照 archisvaze/liquid-glass 的做法）：
+ * 只用 CSS `inset box-shadow` 做边缘高光，得到的是**均匀一圈**的描边，
+ * 看起来像塑料边框，不像玻璃 —— 真实玻璃的高光是：
+ *   1. 只出现在**迎光侧**（本库光照方向 45°，即左上）
+ *   2. 强度沿边缘**连续变化**（法线与光向的夹角决定）
+ *   3. 集中在**边缘带内**，中心无高光
+ *
+ * 所以按像素计算 `dot(边缘法线, 光向)` 并据此调制 alpha。
+ * 与参考实现等价，但复用本库已有的 tokens（lighting.angle / specularOpacity）。
+ *
+ * @param angleDeg 光照方向（度）。0 = 向右，90 = 向下；45 = 左上→右下。
+ */
+export function createSpecularMap(opts: {
+  width: number
+  height: number
+  radius: number
+  bezelWidth: number
+  angleDeg?: number
+  /** 高光带相对 bezel 的宽度倍数。参考实现用 2.5。 */
+  bandScale?: number
+}): string {
+  const { width: w, height: h, radius } = opts
+  const bezelWidth = Math.max(1, opts.bezelWidth)
+  const bandScale = opts.bandScale ?? 2.5
+  // 光照向量：tokens 里 angle 是「顺时针从右方向下」，转成数学坐标（y 向上为正）
+  const rad = ((opts.angleDeg ?? 45) * Math.PI) / 180
+  const lx = Math.cos(rad)
+  const ly = -Math.sin(rad)
+
+  const canvas = document.createElement('canvas')
+  canvas.width = w
+  canvas.height = h
+  const ctx = canvas.getContext('2d')
+  if (!ctx) throw new Error('[LiquidGlass] 无法创建 2D 上下文')
+
+  const img = ctx.createImageData(w, h)
+  const d = img.data
+  d.fill(0) // 全透明：没有高光的地方就是透明
+
+  const r = radius
+  const rSq = r * r
+  const r1Sq = (r + 1) ** 2
+  // 高光带内边界（比折射带更窄，集中在最外圈）
+  const rBSq = Math.max(r - bezelWidth * bandScale, 0) ** 2
+  const wB = w - r * 2
+  const hB = h - r * 2
+
+  for (let y1 = 0; y1 < h; y1++) {
+    for (let x1 = 0; x1 < w; x1++) {
+      const x = x1 < r ? x1 - r : x1 >= w - r ? x1 - r - wB : 0
+      const y = y1 < r ? y1 - r : y1 >= h - r ? y1 - r - hB : 0
+      const dSq = x * x + y * y
+      if (dSq > r1Sq || dSq < rBSq) continue // 只在高光带内
+      const dist = Math.sqrt(dSq)
+      if (dist === 0) continue
+
+      const fromSide = r - dist
+      // 1px 抗锯齿
+      const op =
+        dSq < rSq ? 1 : 1 - (dist - Math.sqrt(rSq)) / (Math.sqrt(r1Sq) - Math.sqrt(rSq))
+      if (op <= 0) continue
+
+      // 边缘法线（指向形状中心的反向 = 向外）
+      const nx = x / dist
+      const ny = y / dist
+      // 迎光程度：法线与光向的点积，取绝对值 → 两侧对称高光
+      const dot = Math.abs(nx * lx + ny * ly)
+      // 越靠近最外缘越亮（平方让高光收得更紧，形成「镜面线」）
+      const edge = Math.sqrt(Math.max(0, 1 - (1 - Math.min(1, fromSide / (bezelWidth * bandScale))) ** 2))
+      const coeff = dot * edge
+      if (coeff <= 0.002) continue
+
+      const col = clamp255(255 * coeff)
+      const alpha = clamp255(255 * coeff * coeff * op)
+      const idx = (y1 * w + x1) * 4
+      d[idx] = col
+      d[idx + 1] = col
+      d[idx + 2] = col
+      d[idx + 3] = alpha
+    }
+  }
+
+  ctx.putImageData(img, 0, 0)
+  return canvas.toDataURL()
 }

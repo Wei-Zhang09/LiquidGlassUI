@@ -40,20 +40,41 @@ export const SHARED_CSS = `
     background: var(--lg-surface-solid, rgba(255, 255, 255, 0.88));
   }
 
-  /* 边缘高光：渐变而非实心边框 */
+  /**
+   * 边缘高光 —— ⚠️ 必须**只出现在边缘带**，不能覆盖整个面板。
+   *
+   * 曾经的写法是一条横跨整个面板的 45° 白色渐变（opacity 0.55 + screen），
+   * 结果中心被持续加亮：实测比参考实现亮 +27.5（0-255），
+   * 饱和度只有 77%，看起来「发奶」而不是通透玻璃。
+   *
+   * 现在用 mask 把高光限制在距边缘 ~1.5px 的环带内：
+   * 中心完全不加亮，只在轮廓处出现一条镜面亮线。
+   * 这是「液态玻璃」和「磨砂玻璃」最关键的分界 —— 见 fair-ref/fair-ours 对比。
+   */
   :host::before {
     content: "";
     position: absolute;
     inset: 0;
     border-radius: inherit;
     pointer-events: none;
+    /* 只保留极靠边的一圈 */
+    padding: 2.5px;
     background: linear-gradient(
       var(--lg-light-angle, 45deg),
       transparent 0%,
       var(--lg-highlight, rgba(255,255,255,0.5)) 42%,
       transparent 72%
     );
-    opacity: 0.55;
+    /* 用 padding-box 挖空内部 → 只剩边框环 */
+    -webkit-mask:
+      linear-gradient(rgb(0 0 0 / 1) 0 0) content-box,
+      linear-gradient(rgb(0 0 0 / 1) 0 0);
+    -webkit-mask-composite: xor;
+    mask:
+      linear-gradient(rgb(0 0 0 / 1) 0 0) content-box,
+      linear-gradient(rgb(0 0 0 / 1) 0 0);
+    mask-composite: exclude;
+    opacity: 1;
     mix-blend-mode: screen;
     z-index: 1;
   }

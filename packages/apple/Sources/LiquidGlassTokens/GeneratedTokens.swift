@@ -29,10 +29,10 @@ public enum GlassColorTokens {
     public static let light = GlassColors(
         tint: GlassColor(red: 1.0000, green: 1.0000, blue: 1.0000, alpha: 0.1500),
         tintStrong: GlassColor(red: 1.0000, green: 1.0000, blue: 1.0000, alpha: 0.2800),
-        highlight: GlassColor(red: 1.0000, green: 1.0000, blue: 1.0000, alpha: 0.5000),
+        highlight: GlassColor(red: 1.0000, green: 1.0000, blue: 1.0000, alpha: 0.7000),
         shadow: GlassColor(red: 0.1300, green: 0.1900, blue: 0.2400, alpha: 0.1800),
         innerShadow: GlassColor(red: 0.4000, green: 0.5000, blue: 0.5900, alpha: 0.1000),
-        surface: GlassColor(red: 1.0000, green: 1.0000, blue: 1.0000, alpha: 0.4400),
+        surface: GlassColor(red: 1.0000, green: 1.0000, blue: 1.0000, alpha: 0.1200),
         overlay: GlassColor(red: 0.0700, green: 0.1000, blue: 0.1400, alpha: 0.5500),
         surfaceModal: GlassColor(red: 1.0000, green: 1.0000, blue: 1.0000, alpha: 0.8200)
     )
@@ -43,7 +43,7 @@ public enum GlassColorTokens {
         highlight: GlassColor(red: 1.0000, green: 1.0000, blue: 1.0000, alpha: 0.3800),
         shadow: GlassColor(red: 0.0000, green: 0.0000, blue: 0.0000, alpha: 0.4500),
         innerShadow: GlassColor(red: 0.0000, green: 0.0000, blue: 0.0000, alpha: 0.2200),
-        surface: GlassColor(red: 1.0000, green: 1.0000, blue: 1.0000, alpha: 0.1000),
+        surface: GlassColor(red: 1.0000, green: 1.0000, blue: 1.0000, alpha: 0.0600),
         overlay: GlassColor(red: 0.0000, green: 0.0000, blue: 0.0000, alpha: 0.6800),
         surfaceModal: GlassColor(red: 0.1200, green: 0.1500, blue: 0.2000, alpha: 0.8600)
     )
@@ -59,17 +59,17 @@ public enum GlassRadiusTokens {
 
 public enum GlassBlurTokens {
     public static let none: Double = 0
-    public static let subtle: Double = 8
-    public static let regular: Double = 16
-    public static let heavy: Double = 30
+    public static let subtle: Double = 2
+    public static let regular: Double = 4
+    public static let heavy: Double = 12
 }
 
 public enum GlassOpticalTokens {
-    public static let bezelWidth: Double = 14
+    public static let bezelWidth: Double = 22
     public static let displacementScale: Double = 70
-    public static let ior: Double = 1.5
+    public static let ior: Double = 1.6
     public static let dispersion: Double = 2.0
-    public static let saturation: Double = 140
+    public static let saturation: Double = 180
     public static let elasticity: Double = 0.15
     public static let cornerSmoothing: Double = 0.6
     public static let refractionHeight: Double = 12
@@ -80,8 +80,8 @@ public enum GlassLightingTokens {
     public static let angle: Double = 45
     public static let highlightWidth: Double = 0.5
     public static let highlightAlpha: Double = 1.0
-    public static let specularSharpness: Double = 2.0
-    public static let specularOpacity: Double = 0.45
+    public static let specularSharpness: Double = 3.0
+    public static let specularOpacity: Double = 0.85
 }
 
 public enum GlassMotionTokens {
