@@ -49,11 +49,11 @@
 
 <ClientOnly>
 
-<div class="lg-demo is-center">
-  <lg-glass-surface surface="convexSquircle" radius="22" style="padding:22px 30px;">convexSquircle</lg-glass-surface>
-  <lg-glass-surface surface="convexCircle" radius="22" style="padding:22px 30px;">convexCircle</lg-glass-surface>
-  <lg-glass-surface surface="concave" radius="22" style="padding:22px 30px;">concave</lg-glass-surface>
-  <lg-glass-surface surface="lip" radius="22" style="padding:22px 30px;">lip</lg-glass-surface>
+<div class="lg-demo is-center lg-surface-row">
+  <lg-glass-surface surface="convexSquircle" radius="22">convexSquircle</lg-glass-surface>
+  <lg-glass-surface surface="convexCircle" radius="22">convexCircle</lg-glass-surface>
+  <lg-glass-surface surface="concave" radius="22">concave</lg-glass-surface>
+  <lg-glass-surface surface="lip" radius="22">lip</lg-glass-surface>
 </div>
 
 </ClientOnly>

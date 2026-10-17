@@ -133,3 +133,40 @@
   color: #1b2733;
   min-width: 120px;
 }
+
+
+/* ────────────────────────────────────────────────────────────
+   折射曲面演示：四个按钮**等宽**。
+
+   原来每个按钮的宽度由文字长度决定 —— 实测
+   convexSquircle 175px / convexCircle 157px / concave 124px / lip 77px。
+   `lip` 只有 77px 宽，文字几乎顶到边缘，缩小看时抗锯齿像素和底色混成
+   一块灰（用户截图里「文字有灰色底」的观感来源之一）。
+
+   等宽 + 固定高度后，四个按钮的玻璃曲率可直接对比，
+   也不会因为文字短而挤成小方块。
+   ──────────────────────────────────────────────────────────── */
+.lg-demo.lg-surface-row {
+  gap: 14px;
+}
+
+.lg-demo.lg-surface-row lg-glass-surface {
+  flex: 1 1 0;
+  min-width: 0;
+  height: 64px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  letter-spacing: 0.01em;
+}
+
+/* 窄屏换行：两列 */
+@media (max-width: 640px) {
+  .lg-demo.lg-surface-row {
+    flex-wrap: wrap;
+  }
+  .lg-demo.lg-surface-row lg-glass-surface {
+    flex: 1 1 calc(50% - 7px);
+  }
+}
