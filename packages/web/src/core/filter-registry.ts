@@ -36,6 +36,13 @@ export interface FilterRequest {
   height: number
   radius: number
   surface?: string
+  /**
+   * 中心模糊强度（px）。
+   *
+   * ⚠️ 必须参与缓存 key —— 否则同一尺寸不同 level 会命中同一个滤镜，
+   * 四档材质长得完全一样（实测踩过：plain/regular/elevated/focused 像素级相同）。
+   */
+  blur?: number
   overrides?: Partial<typeof optical>
 }
 
@@ -66,13 +73,13 @@ function ensureHost(): SVGSVGElement {
  * 返回 null 表示该几何尺寸下边缘带无效，调用方应走降级路径。
  */
 export function acquireFilter(req: FilterRequest): string | null {
-  const { width, height, radius, surface = 'convexSquircle', overrides = {} } = req
+  const { width, height, radius, surface = 'convexSquircle', blur = 2, overrides = {} } = req
   const w = Math.ceil(width)
   const h = Math.ceil(height)
   if (w < 4 || h < 4) return null
 
   const cfg = { ...optical, ...overrides }
-  const key = [w, h, radius, surface, cfg.bezelWidth, cfg.ior, cfg.dispersion, cfg.saturation].join(':')
+  const key = [w, h, radius, surface, blur, cfg.bezelWidth, cfg.ior, cfg.dispersion, cfg.saturation].join(':')
   const existing = cache.get(key)
   if (existing) return existing
 
@@ -134,11 +141,11 @@ export function acquireFilter(req: FilterRequest): string | null {
     values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 1 0 0"/>
 
   <!-- 全幅底色：模糊，中心保持清晰 -->
-  <feGaussianBlur in="SourceGraphic" stdDeviation="1.2" result="BLUR"/>
+  <feGaussianBlur in="SourceGraphic" stdDeviation="${blur}" result="BLUR"/>
   <feColorMatrix in="BLUR" type="saturate" values="${cfg.saturation / 100}" result="BASE"/>
 
   <!-- 边缘带：更重的模糊 + 位移 + 色散 -->
-  <feGaussianBlur in="SourceGraphic" stdDeviation="1.9" result="BLUR_EDGE"/>
+  <feGaussianBlur in="SourceGraphic" stdDeviation="${Math.max(1.9, blur * 1.4)}" result="BLUR_EDGE"/>
   ${dispBlock}
   <feColorMatrix in="DISP" type="saturate" values="${cfg.saturation / 100}" result="DISP_SAT"/>
 

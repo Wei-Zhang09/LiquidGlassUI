@@ -60,8 +60,8 @@ public enum GlassRadiusTokens {
 public enum GlassBlurTokens {
     public static let none: Double = 0
     public static let subtle: Double = 2
-    public static let regular: Double = 4
-    public static let heavy: Double = 12
+    public static let regular: Double = 6
+    public static let heavy: Double = 14
 }
 
 public enum GlassOpticalTokens {

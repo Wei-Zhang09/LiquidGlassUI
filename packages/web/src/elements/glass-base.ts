@@ -91,11 +91,25 @@ export const SHARED_CSS = `
 const MIN_FILTER_SIZE = 4
 
 /** 材质层级 → 模糊强度。与 Compose 端的 GlassLevel 对应。 */
+/**
+ * 材质层级 → 模糊强度。
+ *
+ * ⚠️ fallback 值必须与 tokens.json 里的 blur 值一致。
+ * 原来写的是 8 / 16 / 30，而 token 是 2 / 4 / 12 ——
+ * 一旦 CSS 变量没加载（或顺序问题），就会退回一个**大 4 倍**的模糊，
+ * 直接变成磨砂玻璃。这种「值不一致」不会报错，只会静默变糊。
+ *
+ * 层级差异靠「模糊 + 表面填充」共同拉开（见 applyLevel）：
+ *   plain    0px   完全通透
+ *   regular  2px   轻微扩散
+ *   elevated 6px   明显厚感
+ *   focused  14px  最厚（模态/焦点态）
+ */
 export const LEVEL_BLUR: Record<string, string> = {
   plain: 'var(--lg-blur-none, 0px)',
-  regular: 'var(--lg-blur-subtle, 8px)',
-  elevated: 'var(--lg-blur-regular, 16px)',
-  focused: 'var(--lg-blur-heavy, 30px)',
+  regular: 'var(--lg-blur-subtle, 2px)',
+  elevated: 'var(--lg-blur-regular, 6px)',
+  focused: 'var(--lg-blur-heavy, 14px)',
 }
 
 export abstract class GlassElementBase extends HTMLElement {
@@ -147,7 +161,11 @@ export abstract class GlassElementBase extends HTMLElement {
     if (oldV === newV) return
     if (name === 'radius') this.applyRadius()
     else if (name === 'theme') this.applyTheme()
-    else if (name === 'level') this.applyLevel()
+    else if (name === 'level') {
+      this.applyLevel()
+      // 模糊强度变了 → 需要重新生成滤镜（缓存 key 含 blur）
+      this.scheduleBuild()
+    }
     if (this.geometryAttributes.includes(name)) this.scheduleBuild()
     if (this.styleAttributes.includes(name)) this.onStyleAttribute(name)
   }
@@ -213,11 +231,21 @@ export abstract class GlassElementBase extends HTMLElement {
     const radiusPx = radiusAttr ? parseFloat(radiusAttr) : radiusTokens.lg
     const radius = Math.min(radiusPx, Math.min(w, h) / 2)
 
+    /**
+     * ⚠️ level 的模糊必须**传给滤镜**，否则四档完全一样。
+     * 原来 --lg-blur 只设了 CSS 变量，但折射路径用的是
+     * `backdrop-filter: url(#filter)` —— 模糊发生在 SVG 滤镜内部，
+     * CSS 变量根本没人读。实测：四个 level 的中心像素完全相同（35.51）。
+     */
+    const level = this.getAttribute('level') ?? 'regular'
+    const blurPx = parseFloat(LEVEL_BLUR[level]?.match(/([\d.]+)px/)?.[1] ?? '2')
+
     const id = acquireFilter({
       width: w,
       height: h,
       radius,
       surface: this.getAttribute('surface') ?? 'convexSquircle',
+      blur: blurPx,
     })
     if (!id) {
       // 几何尺寸不足以构成边缘带 → 退到磨砂，而不是留一块没效果的玻璃

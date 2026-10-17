@@ -53,8 +53,8 @@ object GlassRadiusTokens {
 object GlassBlurTokens {
     val none = 0.dp
     val subtle = 2.dp
-    val regular = 4.dp
-    val heavy = 12.dp
+    val regular = 6.dp
+    val heavy = 14.dp
 }
 
 object GlassOpticalTokens {

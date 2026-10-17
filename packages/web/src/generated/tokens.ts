@@ -28,7 +28,7 @@ export const radius = {
 } as const
 
 export const blur = {
-  none: 0, subtle: 2, regular: 4, heavy: 12,
+  none: 0, subtle: 2, regular: 6, heavy: 14,
 } as const
 
 export const optical = {
