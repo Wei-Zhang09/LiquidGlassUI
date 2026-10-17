@@ -4,6 +4,11 @@
 
 ## 能力对比
 
+::: warning 这张表说的是「技术上能做到」，不是「本库已验证」
+每一格的含义是**该平台的能力上限**，不是本库的实现状态。
+本库的实际验证状态见下方表格 —— iOS / RN / macOS / Linux **均未验证**。
+:::
+
 | 能力 | Web | Windows 桌面 | Android | iOS |
 |---|---|---|---|---|
 | 真折射 | ✅ 仅 Chromium | ✅ | ✅ API 33+ | ✅ iOS 26+ |
@@ -12,12 +17,18 @@
 | 色散 | ✅ | ✅ | ✅ | ⚠️ 系统控制 |
 | 降级到磨砂 | ✅ 自动 | ⚠️ 需自写分支 | ⚠️ 需自写分支 | ✅ 自动 |
 
-::: warning 本库的验证状态
-上表区分「**已实现并验证**」与「**仅骨架**」。逐项证据见[验证报告](/verification)。
+## 本库的实际验证状态
 
-- Web / Windows / Android：有像素级或真机证据
-- iOS：**只有代码骨架，未编译未运行**（无 macOS 环境）
-:::
+| 平台 | 实现 | 验证 | 证据 |
+|---|---|---|---|
+| Web | ✅ 10 个组件 | ✅ **已验证** | 双浏览器 + 像素级 A/B（边缘 mean 83.4 / 中心 0.0） |
+| Windows 桌面 | ✅ 7 个组件 | ✅ **已验证** | 截图 + 像素级 A/B（边缘 21.1 / 本底 0.5 = 42×） |
+| Android | ✅ 7 个组件 | ✅ **已验证** | Xiaomi 13 / Android 16 真机截图 |
+| macOS / Linux 桌面 | ✅（同一份代码） | ⚠️ **未验证 —— 无设备** | 无 |
+| iOS | ⚠️ 仅骨架 | ❌ **未验证 —— 无 macOS** | 无 |
+| React Native | ⚠️ 仅骨架 | ❌ **未验证 —— 无 macOS** | 无 |
+
+**「未验证」的三项不应被当作可用**。逐项证据见[验证报告](/verification)。
 
 ## Web
 
@@ -56,21 +67,26 @@
 
 | 组件 | Web | Windows | Android | iOS |
 |---|---|---|---|---|
-| `GlassSurface` | ● | ● | ● | ● |
-| `GlassCard` | ● | ● | ● | ● |
-| `GlassButton` | ● | ● | ● | ● |
+| `GlassSurface` | ● | ● | ● | ◐ |
+| `GlassCard` | ● | ● | ● | ◐ |
+| `GlassButton` | ● | ● | ● | ◐ |
 | `GlassGroup` | ● | ● | ● | ○ |
-| `GlassNavBar` | ● | ○ | ● | ● |
-| `GlassBottomBar` | ● | ○ | ● | ● |
-| `GlassDialog` | ● | ● | ● | ● |
-| `GlassSwitch` | ● | ○ | ● | ● |
-| `GlassSlider` | ● | ○ | ● | ● |
-| `GlassSegmented` | ● | ○ | ○ | ● |
+| `GlassNavBar` | ● | ○ | ● | ◐ |
+| `GlassBottomBar` | ● | ○ | ● | ◐ |
+| `GlassDialog` | ● | ● | ● | ◐ |
+| `GlassSwitch` | ● | ○ | ● | ◐ |
+| `GlassSlider` | ● | ○ | ● | ◐ |
+| `GlassSegmented` | ● | ○ | ○ | ◐ |
 | `GlassSidebar` | — | ● | ● | — |
 | `GlassMenu` | — | ● | ● | — |
 | `GlassTooltip` | — | ● | ● | — |
 
-`●` 已实现　`○` 未实现　`—` 该平台无此形态
+`●` 已实现**并验证**　`◐` 只有代码骨架、**未编译未运行**　`○` 未实现　`—` 该平台无此形态
+
+::: warning iOS 整列都是 ◐
+iOS 只有 Swift 骨架，**没有编译、没有运行、没有截图**（开发机为 Windows，无 macOS）。
+不要把 `◐` 当作可用。详见 [iOS 平台页](/platform/ios)。
+:::
 
 ## 下一步
 

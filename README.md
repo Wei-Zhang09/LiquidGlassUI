@@ -2,7 +2,9 @@
 
 跨端液态玻璃（Liquid Glass）UI 组件库。**一次定义设计参数，四端一致渲染。**
 
-> 状态：**v0.1 规划中**。架构与组件矩阵见 [ADR-0001](docs/adr/0001-component-matrix-and-architecture.md)。
+> 状态：**v0.1.0** —— Web / Windows 桌面 / Android 三端已实现并验证（iOS 仅骨架，见下）。
+> 在线文档与演示：<https://wei-zhang09.github.io/LiquidGlassUI/>
+> 架构与组件矩阵见 [ADR-0001](docs/adr/0001-component-matrix-and-architecture.md)。
 
 ## 这是什么
 
@@ -16,14 +18,19 @@ Apple 在 iOS 26 引入 Liquid Glass 材质后，各生态出现了大量独立�
 
 开发优先级：**Web > Windows 桌面 > 移动端**（见 [ADR-0002](docs/adr/0002-platform-priority-and-desktop.md)）。
 
-| 优先级 | 平台 | 包 | 真实折射 | 最低版本 | 本机可验证 |
+| 优先级 | 平台 | 包 | 真实折射 | 最低版本 | 验证状态 |
 |---|---|---|---|---|---|
-| P0 | Web（React + Web Components） | `@liquidglass/web` | ✅ 仅 Chromium | 现代浏览器 | ✅ 双浏览器实测 |
-| P1 | Windows 桌面 | `liquidglass-compose` | ✅ AGSL 运行时着色器 | JVM 11+ | ✅ |
-| P2 | Android | `liquidglass-compose` | ✅ AGSL 运行时着色器 | API 33 | ✅ 真机验证 |
-| P2 | macOS / Linux 桌面 | `liquidglass-compose` | ✅ | JVM 11+ | ⚠️ 未验证 |
-| P3 | iOS / SwiftUI + UIKit | `LiquidGlassUI` (SwiftPM) | ✅ 系统材质 | iOS 26 | ❌ 无 macOS |
-| P3 | React Native | `@liquidglass/rn` | ✅ 仅 iOS | iOS 26 + RN 0.80+ | ❌ 无 macOS |
+| P0 | Web（Web Components + React） | `@liquidglass/web` | ✅ 仅 Chromium | 现代浏览器 | ✅ **已验证**（双浏览器 + 像素级 A/B） |
+| P1 | Windows 桌面 | `liquidglass-compose` | ✅ AGSL 运行时着色器 | JVM 11+ | ✅ **已验证**（截图 + 像素级 A/B） |
+| P2 | Android | `liquidglass-compose` | ✅ AGSL 运行时着色器 | API 33 | ✅ **已验证**（Xiaomi 13 真机） |
+| P2 | macOS / Linux 桌面 | `liquidglass-compose` | ✅（同一份代码） | JVM 11+ | ⚠️ **未验证 —— 无设备** |
+| P3 | iOS / SwiftUI + UIKit | `LiquidGlassUI` (SwiftPM) | ✅ 系统材质 | iOS 26 | ❌ **未验证 —— 无 macOS** |
+| P3 | React Native | `@liquidglass/rn` | ✅ 仅 iOS | iOS 26 + RN 0.80+ | ❌ **未验证 —— 无 macOS** |
+
+> **关于「未验证」的三项**：macOS / Linux 桌面与 macOS 共用同一份 Compose 代码，
+> 理论上可直接运行，但**本机只有 Windows，没有实际编译运行过**。
+> iOS / RN 只有代码骨架，**未编译、未运行、无截图**。
+> 在补齐对应设备前，文档与发布说明中不得声称这几项已验证。
 
 **桌面端与移动端共用一套 Compose 代码**：`io.github.kyant0:backdrop` 以 `jvm("desktop")` 为一等目标，同一份实现同时产出 Windows / macOS / Linux / Android，无需维护两份。
 
@@ -72,11 +79,11 @@ import { isLiquidGlassSupported } from '@liquidglass/rn'
 | `GlassTooltip` 交互 | 同上 | ✅ 3 个用例全过：悬停前不渲染、悬停显示、移开消失 |
 | `GlassMenu` 交互 | 同上 | ✅ 5 个用例全过：初始关闭、打开显示全部项、选中关闭、禁用项不关闭、锚点收到 open 状态 |
 | Web 组件渲染 | `tools/verify-web-showcase.py`，双浏览器 | ✅ 5 类组件 14 个实例全部渲染；Chromium 有折射滤镜、Firefox 降级 frost；无 JS 错误 |
-| Web 组件逻辑 | `npx vitest run`（jsdom） | ✅ 99 个用例：能力门控、降级阶梯、键盘可达、禁用态、属性响应、SDF 融合数学、组接管、焦点陷阱、roving tabindex |
+| Web 组件逻辑 | `npx vitest run`（jsdom） | ✅ **136 个用例**：能力门控、降级阶梯、键盘可达、禁用态、属性响应、SDF 融合数学、组接管、焦点陷阱、roving tabindex、React 封装（10 个组件属性桥接） |
 | Web 交互（真实浏览器） | `tools/verify-web-interaction.py` | ✅ 对话框开/关、遮罩铺满、滚动锁定与恢复、分段控件切换与 aria 同步 |
 | Web 玻璃融合 | 真实浏览器，检查子元素滤镜前缀 | ✅ 组内子元素全部使用 `lg-fused-` 融合滤镜（smoothing=8 与 40 两组） |
 | Android 真机运行 | Xiaomi 13 · Android 16 / API 36 | ✅ 安装、启动、进程存活、无致命异常；边缘折射在真机可见 |
-| Compose 组件测试 | `./gradlew desktopTest` | ✅ 65 个用例（共享测试 + 平台交互实证 + 长按 + SDF 数学 + 着色器编译） |
+| Compose 组件测试 | `./gradlew desktopTest` | ✅ 用例覆盖共享交互、平台分化实证、长按、SDF 数学、着色器编译（数量以实际运行输出为准） |
 
 截图见 `docs/screenshots/`。
 
@@ -89,17 +96,18 @@ v1 核心组件（跨端一致）：
 | `GlassSurface` 玻璃面 | ● | ● | ● | ● |
 | `GlassCard` 卡片 | ● | ● | ● | ● |
 | `GlassButton` 按钮 | ● | ● | ● | ● |
-| `GlassGroup` 组合容器（SDF 融合） | ● | ○ | ○ | ● |
+| `GlassGroup` 组合容器（SDF 融合） | ● | ○ | ● | ● |
 | `GlassNavBar` 顶部导航 | ● | ● | ● | ○ |
 | `GlassBottomBar` 底部标签栏 | ● | ● | ● | ○ |
 | `GlassDialog` 对话框 | ● | ● | ● | ● |
 | `GlassSwitch` 开关 | ● | ● | ● | ○ |
 | `GlassSlider` 滑块 | ● | ● | ● | ○ |
-| `GlassSegmentedControl` 分段控件 | ● | ● | ○ | ○ |
+| `GlassSegmented` 分段控件 | ● | ● | ○ | ○ |
 
 ● 主力场景　○ 支持但非主流
 
-v2 平台特色组件：`GlassMenu`、`GlassSidebar`、`GlassSearchBar`、`GlassToast`、`GlassListItem`、`GlassFAB`、`GlassChip`、`GlassTooltip`、`GlassProgress`
+v2 平台特色组件**已实现**：`GlassMenu`、`GlassSidebar`、`GlassTooltip`（Compose 端）。
+**规划中未实现**：`GlassSearchBar`、`GlassToast`、`GlassListItem`、`GlassFAB`、`GlassChip`、`GlassProgress`。
 
 完整依据（含各参考实现的源码统计）见 [ADR-0001](docs/adr/0001-component-matrix-and-architecture.md)。
 
@@ -117,7 +125,7 @@ LiquidGlassUI/
 │   ├── compose/                Kotlin / Compose Multiplatform
 │   ├── apple/                  Swift Package（SwiftUI + UIKit）
 │   └── rn/                     React Native
-├── examples/                   各端可运行示例
+├── examples/                   Web 示例（桌面/移动示例在各自包内，见 examples/README.md）
 └── tools/                      token 生成、验证与截图脚本
 ```
 
@@ -134,6 +142,15 @@ npm run build    # 输出到 .vitepress/dist
 
 文档站**本身就是用本库的材质做的**（dogfooding）—— 导航、侧边栏、代码块、
 API 表格全部玻璃化。一个讲液态玻璃的库，文档用扁平皮肤是自相矛盾的。
+
+**按平台分区**（不是把所有组件平铺在一起）：
+
+| 分区 | 路径 | 内容 |
+|---|---|---|
+| Web | `/web/` | 10 个 Web Components，每页有**在线演示** |
+| 桌面端 | `/desktop/` | 共用基础 + 桌面专属（Sidebar / Menu / Tooltip，依赖 hover） |
+| 移动端 | `/mobile/` | 底部标签栏 / 底部抽屉（拇指区） |
+| 平台矩阵 | `/platform/` | 三端能力对比与选型依据 |
 
 演示区直接引用 `packages/web/src` 的源码，保证文档跑的是当前源码而非旧 dist。
 

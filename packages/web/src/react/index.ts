@@ -140,3 +140,185 @@ export const GlassBottomBar = forwardRef<HTMLElement, GlassBottomBarProps>(
     )
   },
 )
+
+
+/* ────────────────────────────────────────────────────────────
+   以下为补齐的 5 个组件（原来只有 Surface / Button / Card /
+   NavBar / BottomBar 五个封装，其余只能用裸标签）。
+   ──────────────────────────────────────────────────────────── */
+
+export interface GlassGroupProps extends CommonProps {
+  /** 相邻形状的融合半径（px）。0 = 不融合 */
+  smoothing?: number
+}
+
+/**
+ * 多个玻璃元素的 SDF 融合。
+ *
+ * 子元素**不需要任何标记** —— 组件自动读取每个子元素的真实几何（getBoundingClientRect），
+ * 用它们的平滑并集计算距离场，因此融合处折射方向连续，不会各弯各的。
+ * 子元素若带 `radius` 属性，会用它作为该形状的圆角。
+ */
+export const GlassGroup = forwardRef<HTMLElement, GlassGroupProps>(function GlassGroup(p, ref) {
+  useGlassElements()
+  const { smoothing, ...rest } = p
+  return createElement(
+    'lg-glass-group',
+    {
+      ref,
+      ...glassAttrs(rest),
+      ...(smoothing !== undefined ? { smoothing: String(smoothing) } : {}),
+    },
+    rest.children,
+  )
+})
+
+export interface GlassDialogProps extends CommonProps {
+  /** 是否打开 */
+  open?: boolean
+  /** 标题 */
+  heading?: string
+  /** 关闭时回调 */
+  onClose?: () => void
+}
+
+export const GlassDialog = forwardRef<HTMLElement, GlassDialogProps>(function GlassDialog(p, ref) {
+  useGlassElements()
+  const { open, heading, onClose, ...rest } = p
+
+  useEffect(() => {
+    const el = (ref as React.RefObject<HTMLElement>)?.current
+    if (!el || !onClose) return
+    // 组件在点击遮罩 / 按 Esc / 点关闭按钮时派发 lg-close
+    const handler = () => onClose()
+    el.addEventListener('lg-close', handler)
+    return () => el.removeEventListener('lg-close', handler)
+  }, [ref, onClose])
+
+  return createElement(
+    'lg-glass-dialog',
+    {
+      ref,
+      ...glassAttrs(rest),
+      ...(open ? { open: '' } : {}),
+      ...(heading !== undefined ? { heading } : {}),
+    },
+    rest.children,
+  )
+})
+
+export interface GlassSegmentedOption {
+  value: string
+  label: string
+}
+
+export interface GlassSegmentedProps extends Omit<CommonProps, 'children'> {
+  /** 当前选中值 */
+  value?: string
+  /** 选项；也可以用 children 传 <lg-segment> 标签 */
+  options?: GlassSegmentedOption[]
+  /** 选中变化 */
+  onChange?: (value: string) => void
+}
+
+export const GlassSegmented = forwardRef<HTMLElement, GlassSegmentedProps>(
+  function GlassSegmented(p, ref) {
+    useGlassElements()
+    const { value, options, onChange, ...rest } = p
+
+    useEffect(() => {
+      const el = (ref as React.RefObject<HTMLElement>)?.current
+      if (!el || !onChange) return
+      const handler = (e: Event) => {
+        const detail = (e as CustomEvent<{ value?: string }>).detail
+        if (detail?.value) onChange(detail.value)
+      }
+      el.addEventListener('lg-change', handler)
+      return () => el.removeEventListener('lg-change', handler)
+    }, [ref, onChange])
+
+    return createElement(
+      'lg-glass-segmented',
+      {
+        ref,
+        ...glassAttrs(rest),
+        ...(value !== undefined ? { value } : {}),
+      },
+      // ⚠️ 子项是**普通元素 + data-value 属性**，不是自定义标签。
+      // 组件用 ::slotted(*) 接管样式，用 data-value 读值（见 glass-segmented.ts）。
+      options?.map((o) =>
+        createElement('button', { key: o.value, type: 'button', 'data-value': o.value }, o.label),
+      ),
+    )
+  },
+)
+
+export interface GlassSwitchProps extends Omit<CommonProps, 'children'> {
+  checked?: boolean
+  disabled?: boolean
+  'aria-label'?: string
+  onChange?: (checked: boolean) => void
+}
+
+export const GlassSwitch = forwardRef<HTMLElement, GlassSwitchProps>(function GlassSwitch(p, ref) {
+  useGlassElements()
+  const { checked, disabled, onChange, ...rest } = p
+  const ariaLabel = p['aria-label']
+
+  useEffect(() => {
+    const el = (ref as React.RefObject<HTMLElement>)?.current
+    if (!el || !onChange) return
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent<{ checked?: boolean }>).detail
+      onChange(detail?.checked ?? el.hasAttribute('checked'))
+    }
+    el.addEventListener('lg-change', handler)
+    return () => el.removeEventListener('lg-change', handler)
+  }, [ref, onChange])
+
+  return createElement('lg-glass-switch', {
+    ref,
+    ...glassAttrs(rest),
+    ...(checked ? { checked: '' } : {}),
+    ...(disabled ? { disabled: '' } : {}),
+    ...(ariaLabel ? { 'aria-label': ariaLabel } : {}),
+  })
+})
+
+export interface GlassSliderProps extends Omit<CommonProps, 'children'> {
+  min?: number
+  max?: number
+  step?: number
+  value?: number
+  disabled?: boolean
+  'aria-label'?: string
+  onChange?: (value: number) => void
+}
+
+export const GlassSlider = forwardRef<HTMLElement, GlassSliderProps>(function GlassSlider(p, ref) {
+  useGlassElements()
+  const { min, max, step, value, disabled, onChange, ...rest } = p
+  const ariaLabel = p['aria-label']
+
+  useEffect(() => {
+    const el = (ref as React.RefObject<HTMLElement>)?.current
+    if (!el || !onChange) return
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent<{ value?: number }>).detail
+      if (typeof detail?.value === 'number') onChange(detail.value)
+    }
+    el.addEventListener('lg-change', handler)
+    return () => el.removeEventListener('lg-change', handler)
+  }, [ref, onChange])
+
+  return createElement('lg-glass-slider', {
+    ref,
+    ...glassAttrs(rest),
+    ...(min !== undefined ? { min: String(min) } : {}),
+    ...(max !== undefined ? { max: String(max) } : {}),
+    ...(step !== undefined ? { step: String(step) } : {}),
+    ...(value !== undefined ? { value: String(value) } : {}),
+    ...(disabled ? { disabled: '' } : {}),
+    ...(ariaLabel ? { 'aria-label': ariaLabel } : {}),
+  })
+})

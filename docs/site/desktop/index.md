@@ -1,6 +1,20 @@
 # 桌面端组件
 
-Compose Multiplatform 的**桌面形态**（Windows / macOS / Linux）。
+Compose Multiplatform 的**桌面形态**。
+
+::: warning 只有 Windows 经过验证
+同一份代码理论上产出 Windows / macOS / Linux 三个平台的程序，
+但**本机只有 Windows**：
+
+| 平台 | 状态 |
+|---|---|
+| Windows | ✅ 已验证（截图 + 像素级 A/B） |
+| macOS | ⚠️ **未验证 —— 无设备** |
+| Linux | ⚠️ **未验证 —— 无设备** |
+
+macOS / Linux 未验证**不代表不能用** —— 代码是同一份、构建配置已包含
+`jvm("desktop")` 目标。但在有人实际跑通并截图之前，本文档不会声称它们已验证。
+:::
 
 ::: warning 这些页面没有在线演示
 Compose 组件是 Kotlin 代码，编译成原生程序，无法在浏览器里运行。
