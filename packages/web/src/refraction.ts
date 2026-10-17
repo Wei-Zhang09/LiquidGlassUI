@@ -154,21 +154,29 @@ export function buildDisplacementMap(
   const cfg = { ...optical, ...overrides }
 
   /**
-   * ⚠️ 边缘带宽度必须**随元件尺寸缩放**，不能直接用 token 值。
+   * ⚠️⚠️ 边缘带宽度必须**随元件尺寸缩放**，而且比例要小。
    *
-   * 实测教训：token 的 bezelWidth 调到 22px 后，在 300×200 的演示面板上很合适，
-   * 但文档站里 184×105 的小组件上，22px 的边缘带 = 整个元件的 1/5，
-   * 结果**整个面都是「边缘折射」**，看起来就是一坨糊 —— 反而比调之前更差。
+   * 这是「文字周围出现一圈灰底」的真正根因（用户两次反馈）。
    *
-   * 正确做法：边缘带最多占短边的 18%，且不超过圆角。
-   * 这样大面板有厚边缘、小胶囊有细边缘，观感一致。
+   * 实测：按钮 132×64，按短边 18% 算 → bezelWidth = 11.5px。
+   * 但文字行高只有 24px、垂直居中，文字上下各只有 20px 余量 ——
+   * 11.5px 的边缘带**直接盖到文字上**，把背景色块折射进文字区域，
+   * 视觉上就是「文字有一块灰色横带」。
+   *
+   * 关掉 backdrop-filter 后暗带从 22.5 降到 15.3（只剩边缘阴影），
+   * 关掉彩色背景后完全消失 —— 证实是折射把背景色拉进了文字区。
+   *
+   * 修正：边缘带上限从短边 18% 降到 **8%**，且硬上限 10px。
+   * 小胶囊得到 5px 级细边缘，文字区不再被侵蚀；
+   * 大面板仍受 cfg.bezelWidth(22px) 与圆角约束，观感不变。
    */
   const shortSide = Math.min(width, height)
   const bezelWidth = Math.min(
     cfg.bezelWidth,
     Math.max(radius - 1, 1),
-    Math.max(shortSide * 0.18, 2),
+    Math.max(shortSide * 0.08, 2),
     Math.max(shortSide / 2 - 1, 1),
+    10,                       // 硬上限：再大就会盖住内容
   )
   if (bezelWidth <= 1) {
     return { mapUrl: '', scale: 0, bezelWidth: 0, maxDisp: 0 }

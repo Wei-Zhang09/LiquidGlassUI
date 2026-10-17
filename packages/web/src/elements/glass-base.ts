@@ -41,15 +41,18 @@ export const SHARED_CSS = `
   }
 
   /**
-   * 边缘高光 —— ⚠️ 必须**只出现在边缘带**，不能覆盖整个面板。
+   * 边缘高光 —— 用 **内阴影** 实现，不用 mask 环带。
    *
-   * 曾经的写法是一条横跨整个面板的 45° 白色渐变（opacity 0.55 + screen），
-   * 结果中心被持续加亮：实测比参考实现亮 +27.5（0-255），
-   * 饱和度只有 77%，看起来「发奶」而不是通透玻璃。
+   * ⚠️⚠️ 为什么放弃 mask 方案（用户两次反馈「边缘有硬切」）：
    *
-   * 现在用 mask 把高光限制在距边缘 ~1.5px 的环带内：
-   * 中心完全不加亮，只在轮廓处出现一条镜面亮线。
-   * 这是「液态玻璃」和「磨砂玻璃」最关键的分界 —— 见 fair-ref/fair-ours 对比。
+   * 之前用 mask: linear-gradient(...) content-box + mask-composite: exclude
+   * 挖出一个 2.5px 的环带。问题在于：**mask 的边界是硬边**，
+   * 在圆角处抗锯齿很弱，于是按钮上边缘左右各出现一条竖直接缝。
+   * 实测 x=24..26 亮度突跳 +38 / **+55** / +16，肉眼就是「硬切」。
+   *
+   * 换成 inset box-shadow：浏览器对圆角内阴影做的是**沿轮廓的连续渐变**，
+   * 天然没有起止点，也就不可能有接缝。
+   * 用两层模拟迎光方向：左上亮、右下淡。
    */
   :host::before {
     content: "";
@@ -57,23 +60,14 @@ export const SHARED_CSS = `
     inset: 0;
     border-radius: inherit;
     pointer-events: none;
-    /* 只保留极靠边的一圈 */
-    padding: 2.5px;
-    background: linear-gradient(
-      var(--lg-light-angle, 45deg),
-      transparent 0%,
-      var(--lg-highlight, rgba(255,255,255,0.5)) 42%,
-      transparent 72%
-    );
-    /* 用 padding-box 挖空内部 → 只剩边框环 */
-    -webkit-mask:
-      linear-gradient(rgb(0 0 0 / 1) 0 0) content-box,
-      linear-gradient(rgb(0 0 0 / 1) 0 0);
-    -webkit-mask-composite: xor;
-    mask:
-      linear-gradient(rgb(0 0 0 / 1) 0 0) content-box,
-      linear-gradient(rgb(0 0 0 / 1) 0 0);
-    mask-composite: exclude;
+    background: none;
+    /* 沿轮廓的一圈高光：左上强、右下弱，连续无接缝 */
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.9),
+      inset 1px 0 0 rgba(255, 255, 255, 0.55),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.30),
+      inset -1px 0 0 rgba(255, 255, 255, 0.22),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.18);
     opacity: 1;
     mix-blend-mode: screen;
     z-index: 1;
