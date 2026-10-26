@@ -54,14 +54,23 @@ def wait_window(timeout: int = 220) -> bool:
 
 
 def capture(out_png: pathlib.Path) -> bool:
-    env = {**os.environ, "OUTPNG": str(out_png)}
+    # EXPECT_TITLE 让脚本只截标题匹配的窗口 —— 宁可失败也不要抓错窗口。
+    # 旧版用 CopyFromScreen，SetForegroundWindow 静默失败时会抓到压在上面的
+    # 其它窗口（实测抓成过 Hermes 聊天窗口），于是 A/B 比的是同一个会变的窗口，
+    # 报出假的失败。
+    env = {**os.environ, "OUTPNG": str(out_png), "EXPECT_TITLE": TITLE}
     r = subprocess.run(
         ["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass",
          "-File", str(ROOT / "tools" / "capture-window.ps1")],
         capture_output=True, text=True, encoding="utf-8", errors="replace", env=env,
     )
     if "SAVED" not in r.stdout:
-        print("  截图失败:", r.stdout.strip()[:200])
+        # 打印具体原因（TITLE_NOT_FOUND / PRINTWINDOW_FAILED / BLANK_CAPTURE），
+        # 否则「截图失败」四个字无法定位问题
+        reason = [ln for ln in r.stdout.splitlines()
+                  if ln.startswith(("TITLE_NOT_FOUND", "PRINTWINDOW_FAILED",
+                                    "BLANK_CAPTURE", "NO_JAVA_WINDOW", "BAD_RECT"))]
+        print("  截图失败:", reason[0] if reason else r.stdout.strip()[:200])
         return False
     return True
 
