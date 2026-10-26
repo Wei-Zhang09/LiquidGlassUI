@@ -85,8 +85,27 @@ fun GlassGroup(
 
     val density = LocalDensity.current
     val smoothingPx = with(density) { smoothing.toPx() }
-    val refractionHeightPx = with(density) { GlassOpticalTokens.REFRACTION_HEIGHT.dp.toPx() }
-    val refractionAmountPx = with(density) { GlassOpticalTokens.REFRACTION_AMOUNT.dp.toPx() }
+
+    /**
+     * 折射带按**融合形状的包围盒**缩放，而不是按 composable 尺寸。
+     *
+     * 为什么用 shapes 而不是 size：composable 的矩形可能比真实轮廓大（含留白），
+     * 用它算出来的带会偏大；shapes 才描述玻璃实际覆盖的范围。
+     *
+     * 与 GlassSurface 共用同一套缩放规则（短边 8% + 10dp 硬上限），
+     * 原因见 scaledRefractionHeight 的注释：固定值会压到内容上。
+     */
+    val bboxWidthDp = shapes.maxOfOrNull { it.x + it.width } ?: 0f
+    val bboxHeightDp = shapes.maxOfOrNull { it.y + it.height } ?: 0f
+    val refractionHeightPx = with(density) {
+        scaledRefractionHeight(
+            widthPx = bboxWidthDp.dp.toPx(),
+            heightPx = bboxHeightDp.dp.toPx(),
+            tokenHeightPx = GlassOpticalTokens.REFRACTION_HEIGHT.dp.toPx(),
+            hardCapPx = MAX_BEZEL_HARD_CAP_DP.dp.toPx(),
+        )
+    }
+    val refractionAmountPx = refractionHeightPx * REFRACTION_AMOUNT_RATIO
 
     // 形状先在 Kotlin 侧打包成 uniform 数组，避免每帧在着色器里做坐标换算
     val packed = remember(shapes, density) { packShapes(shapes, density) }
